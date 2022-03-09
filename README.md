@@ -4,14 +4,13 @@ Trade any number of assets against any other number of assets without the need f
 
 ## Social Media
 
-- (Twitter)[https://twitter.com/_atomicswap]
-- (Discord)[https://discord.com/invite/ZqpN4TuJ6a]
+- [Twitter](https://twitter.com/_atomicswap)
+- [Discord](https://discord.com/invite/ZqpN4TuJ6a)
 
 ## Handling secrets
 
 Secrets must be stored in a name with the format `secrets.ts` in the `functions/src/` directory.
 (This ensures that they are ignored by git.)
-And follow the format in `secret-type.ts`
 
 Example:
 
@@ -86,7 +85,6 @@ Note that while the frontend is rebuilt automatically the backend must be recomi
 
 ### Metrics update
 
-- [ ] link to https://cardanoscan.io/address/016e97768d8ec17c93d97f12fe52256d43431deaebbb51e14cfb160fdd27540567add2c659e07e1066d29edb2b7a4d582692fdfe7061db8bee
 - [ ] show that other people have used the project!
 - [ ] Decentralized mode!
 - [ ] When connecting wallet they have to sign something...
