@@ -23,8 +23,8 @@ export default function ChangeLog() {
             <Update>Replace Create React App with Vite.</Update>
             <Update>Updated UI of assets in the trading view.</Update>
             <Update>
-              Fixed issue where Atomic Swap was black on first visit after
-              update.
+              Fixed bug where Atomic Swap did not properly cache all static
+              assets causing updates to lead to an inital blank pages.
             </Update>
             <Update>A number of smaller GUI changes</Update>
           </Entry>
