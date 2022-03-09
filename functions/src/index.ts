@@ -1,7 +1,7 @@
 import * as functions from "firebase-functions";
 import * as express from "express";
 import { BlockFrostAPI } from "@blockfrost/blockfrost-js";
-import * as Secrets from "./secrets.development";
+import * as Secrets from "./secrets";
 
 const app = express();
 
