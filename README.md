@@ -11,7 +11,7 @@ Trade any number of assets against any other number of assets without the need f
 ## Handling secrets
 
 Secrets must be stored in a name with the format `secrets.ts` in the `functions/src/` directory.
-(This ensures that they are ignored by git.) You get the secrets from (blockfrost)[https://blockfrost.io].
+(This ensures that they are ignored by git.) You get the secrets from [blockfrost](https://blockfrost.io).
 
 Example:
 
