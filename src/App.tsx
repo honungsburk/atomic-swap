@@ -177,42 +177,6 @@ function App() {
     changeWallet: setWallet,
   };
 
-  // return (
-  //   <PageErrorBoundary>
-  //     <Suspense fallback={<Loading />}>
-  //       <Routes>
-  //         <Route
-  //           path="/"
-  //           element={
-  //             <Layout
-  //               env={env}
-  //               session={session}
-  //               lib={CardanoSerializationLib}
-  //             />
-  //           }
-  //         >
-  //           <Route
-  //             path="/home"
-  //             element={
-  //               <PageErrorBoundary>
-  //                 <Home channelState={channelState} />
-  //               </PageErrorBoundary>
-  //             }
-  //           />
-  //           <Route
-  //             path="/*"
-  //             element={
-  //               <PageErrorBoundary>
-  //                 <NotFound />
-  //               </PageErrorBoundary>
-  //             }
-  //           />
-  //         </Route>
-  //       </Routes>
-  //     </Suspense>
-  //   </PageErrorBoundary>
-  // );
-
   return (
     <PageErrorBoundary>
       <Suspense fallback={<Loading />}>
