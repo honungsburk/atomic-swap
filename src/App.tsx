@@ -18,8 +18,9 @@ import Loading from "./Pages/Loading";
 
 import * as CardanoSerializationLib from "@emurgo/cardano-serialization-lib-browser";
 
+import Layout from "./Layout";
+
 // Lazy load routes to allow for code splitting.
-const Layout = lazy(() => import("./Layout"));
 const Home = lazy(() => import("./Pages/Home"));
 const Success = lazy(() => import("./Pages/Success"));
 const Roadmap = lazy(() => import("./Pages/Roadmap"));
@@ -175,6 +176,42 @@ function App() {
     wallet: wallet,
     changeWallet: setWallet,
   };
+
+  // return (
+  //   <PageErrorBoundary>
+  //     <Suspense fallback={<Loading />}>
+  //       <Routes>
+  //         <Route
+  //           path="/"
+  //           element={
+  //             <Layout
+  //               env={env}
+  //               session={session}
+  //               lib={CardanoSerializationLib}
+  //             />
+  //           }
+  //         >
+  //           <Route
+  //             path="/home"
+  //             element={
+  //               <PageErrorBoundary>
+  //                 <Home channelState={channelState} />
+  //               </PageErrorBoundary>
+  //             }
+  //           />
+  //           <Route
+  //             path="/*"
+  //             element={
+  //               <PageErrorBoundary>
+  //                 <NotFound />
+  //               </PageErrorBoundary>
+  //             }
+  //           />
+  //         </Route>
+  //       </Routes>
+  //     </Suspense>
+  //   </PageErrorBoundary>
+  // );
 
   return (
     <PageErrorBoundary>

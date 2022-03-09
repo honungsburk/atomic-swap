@@ -18,7 +18,6 @@ import {
 import React from "react";
 import { FixedSizeList as List } from "react-window";
 import * as CardanoUtil from "../Cardano/Util";
-import CustomScrollbarsVirtualList from "./CustomScrollbarsVirtualList";
 import * as CardanoAsset from "../Cardano/Asset";
 import AssetMini from "./AssetMini";
 import { Ghost } from "react-kawaii";
@@ -94,7 +93,7 @@ function AssetSelectorList(props: {
       </InputGroup>
       {assets.length > 0 ? (
         <List
-          outerElementType={CustomScrollbarsVirtualList}
+          // outerElementType={CustomScrollbarsVirtualList}
           height={300}
           itemCount={assets.length}
           itemSize={52}

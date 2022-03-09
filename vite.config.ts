@@ -52,6 +52,7 @@ export default defineConfig(({ command, mode }) => {
   if (mode === "debug") {
     baseConfig.build = {
       sourcemap: true,
+      minify: false,
     };
   }
 

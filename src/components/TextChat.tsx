@@ -15,7 +15,6 @@ import React from "react";
 import { MessagesOpen, MessagesClosed } from "./Icons";
 import DynamicList, { createCache } from "react-window-dynamic-list";
 import AutoSizer from "react-virtualized-auto-sizer";
-import CustomScrollbarsVirtualList from "./CustomScrollbarsVirtualList";
 import * as TextChannel from "../Network/TextChannel";
 import colors from "../Theme/colors";
 import { Ghost } from "./ChakraKawaii";
@@ -244,10 +243,9 @@ export function TextChatHistory(props: TextChatHistoryProps) {
               return (
                 <DynamicList
                   ref={props.customRef}
-                  outerElementType={CustomScrollbarsVirtualList}
                   cache={cache}
                   data={props.messages}
-                  width={width}
+                  width={width - 4}
                   height={height}
                   measurementContainerElement={({ style, children }) => {
                     return (
@@ -283,7 +281,7 @@ export function TextChatHistory(props: TextChatHistoryProps) {
                               borderRadius: "8px",
                               color: color,
                               background: bgColor,
-                              margin: "8px 16px 0px 8px",
+                              margin: "8px 8px 0px 8px",
                               padding: "2px 8px",
                               maxWidth: width * 0.8,
                             }}
