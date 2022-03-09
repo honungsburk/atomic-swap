@@ -1,19 +1,15 @@
-# Faucet
+# Atomic Swap
 
-Mint your own custom tokens in a completely decentralized way.
+Trade any number of assets against any other number of assets without the need for escrow! NFTs, Tokens, adahandle - anything - everything.
 
-## Fix issue
+## Social Media
 
-if you get the error `Error: error:0308010C:digital envelope routines::unsupported`
-while running `npm run start` add this to your terminal:
-
-```bash
-export NODE_OPTIONS=--openssl-legacy-provider
-```
+- (Twitter)[https://twitter.com/_atomicswap]
+- (Discord)[https://discord.com/invite/ZqpN4TuJ6a]
 
 ## Handling secrets
 
-Secrets must be stored in a name with the format `secrets.(development|production).ts` in the `functions/src/` directory.
+Secrets must be stored in a name with the format `secrets.ts` in the `functions/src/` directory.
 (This ensures that they are ignored by git.)
 And follow the format in `secret-type.ts`
 
@@ -24,12 +20,28 @@ export const BLOCKFROST_ID_MAINNET = "...";
 export const BLOCKFROST_ID_TESTNET = "...";
 ```
 
-## PWA
+## Getting Up and Running
 
-NOTE: Service workers can not be used from private browsing in firefox! Bad way to cache assets!
+### Install & Build
 
-- [API](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)
-- [Cache](https://developer.mozilla.org/en-US/docs/Web/API/Cache)
+1. `npm install`
+2. `cd functions`
+3. `npm install`
+4. Add secrets as explained in "Handling Secrets"
+5. `npm run build`
+6. `cd ..`
+7. `npm run build`
+
+### Serving
+
+After building you can serve the application using by running `firebase emulators:start` and `npm run preview`
+
+### Hot Reloading
+
+When developing you don't need to build the app but can use `firebase emulators:start` and `npm run dev`.
+Note that while the frontend is rebuilt automatically the backend must be recomiled before you can serve new versions.
+
+### TODO
 
 ## 1.7
 
@@ -47,7 +59,7 @@ NOTE: Service workers can not be used from private browsing in firefox! Bad way 
 - [ ] Add state for when brokage servers are down
 - [ ] How to deal with tokens when we don't have the metadata?
 
-## TODO
+## Future
 
 - [ ] Do all rizzo improvements
 - [ ] Only show connect wallet when you are sent a link!
@@ -74,38 +86,23 @@ NOTE: Service workers can not be used from private browsing in firefox! Bad way 
 
 ### Metrics update
 
-- [] link to https://cardanoscan.io/address/016e97768d8ec17c93d97f12fe52256d43431deaebbb51e14cfb160fdd27540567add2c659e07e1066d29edb2b7a4d582692fdfe7061db8bee
-- [] show that other people have used the project!
-- [] Decentralized mode!
-- [] When connecting wallet they have to sign something...
-- [] nbr of visitors
-- [] nbr unqiue wallets/day
-- [] How much mainnet?
-- [] How much testnet?
-- [] How often offer is made?
-- [] How often sign?
-- [] How often reject?
-- [] What is our conversion rate?
-  - [] https://www.youtube.com/watch?v=PGqX9fpweyc
-  - [] nbr of users that add an asset
-  - [] nbr of users that
+- [ ] link to https://cardanoscan.io/address/016e97768d8ec17c93d97f12fe52256d43431deaebbb51e14cfb160fdd27540567add2c659e07e1066d29edb2b7a4d582692fdfe7061db8bee
+- [ ] show that other people have used the project!
+- [ ] Decentralized mode!
+- [ ] When connecting wallet they have to sign something...
+- [ ] nbr of visitors
+- [ ] nbr unqiue wallets/day
+- [ ] How much mainnet?
+- [ ] How much testnet?
+- [ ] How often offer is made?
+- [ ] How often sign?
+- [ ] How often reject?
+- [ ] What is our conversion rate?
+  - [ ] https://www.youtube.com/watch?v=PGqX9fpweyc
+  - [ ] nbr of users that add an asset
+  - [ ] nbr of users that
 
-#### Landing Page
-
-- [] Has a call to action?
-  - [] Is there a magic moment? (UNderstand that you can trade whatever for whatever)
-- [] One sentence that explains exactly what it is. one sentance
-- [] who else is already using it?
-- [] how much is it? what is the catch?
-- [] where can I get help?
-
-## AUDIt
-
-- Is Json.parse safe?
-
-#### NOTE
+## NOTE
 
 To install `react-kawaii` I used the command `npm install --save --legacy-peer-deps react-kawaii`
 since the newer version of npm is stricter in regards to breaking changes.
-
-Same is true for `react-custom-scrollbars`
