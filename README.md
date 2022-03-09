@@ -39,7 +39,7 @@ After building you can serve the application using by running `firebase emulator
 ### Hot Reloading
 
 When developing you don't need to build the app but can use `firebase emulators:start` and `npm run dev`.
-Note that while the frontend is rebuilt automatically the backend must be recomiled before you can serve new versions.
+Note that while the frontend is rebuilt automatically the backend must be recompiled before you can serve new versions.
 
 ### TODO
 
