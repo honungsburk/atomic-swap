@@ -3,6 +3,9 @@
   "private": true,
   "version": "1.6.0",
   "scripts": {
+    "pretty": "prettier --write \"./src/**/*.{ts,tsx,json}\"",
+    "lint": "eslint --ext .js,.ts ./src",
+    "lint-fix": "eslint --ext .js,.ts ./src --fix",
     "dev": "vite",
     "build": "tsc && vite build",
     "build-debug": "tsc && vite build --mode debug",
