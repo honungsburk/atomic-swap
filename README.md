@@ -2,8 +2,9 @@
 
 Trade any number of assets against any other number of assets without the need for escrow! NFTs, Tokens, adahandle - anything - everything.
 
-## Social Media
+## Links
 
+- [Atomic Swap](https://atomic-swap.io/)
 - [Twitter](https://twitter.com/_atomicswap)
 - [Discord](https://discord.com/invite/ZqpN4TuJ6a)
 
