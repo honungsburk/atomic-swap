@@ -9,12 +9,10 @@ export default defineConfig(({ mode }) => {
   const baseConfig: UserConfigExport = {
     server: {
       proxy: {
-        // string shorthand
         "/api": "http://localhost:5000/",
       },
     },
     plugins: [
-      // wasmPack("@emurgo/cardano-serialization-lib-web"),
       wasm(),
       topLevelAwait(),
       react(),
