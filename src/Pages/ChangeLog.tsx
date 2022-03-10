@@ -24,7 +24,7 @@ export default function ChangeLog() {
             <Update>Updated UI of assets in the trading view.</Update>
             <Update>
               Fixed bug where Atomic Swap did not properly cache all static
-              assets causing updates to lead to an inital blank pages.
+              assets causing updates to lead to an inital blank page.
             </Update>
             <Update>A number of smaller GUI changes</Update>
           </Entry>
