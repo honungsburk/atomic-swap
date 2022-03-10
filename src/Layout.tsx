@@ -26,6 +26,7 @@ import {
   MenuList,
   MenuItem,
   useColorModeValue,
+  useInterval,
 } from "@chakra-ui/react";
 import { Env } from "./Env";
 import { Link as ReachLink, Outlet } from "react-router-dom";
@@ -44,7 +45,7 @@ import AtomicSwapLogo from "./components/Logo";
 import { usePWAInstall } from "./Hooks/PWA";
 import * as CardanoSerializationLib from "@emurgo/cardano-serialization-lib-browser";
 
-function Layout(props: {
+export default function Layout(props: {
   env: Env;
   session?: NetworkSession.Session;
   lib?: typeof CardanoSerializationLib;
@@ -58,24 +59,28 @@ function Layout(props: {
     sm: "horizontal",
   });
 
-  React.useEffect(() => {
-    const exec = async () => {
+  const checkHealth = async () => {
+    try {
       if (props.env.wallet !== undefined) {
-        try {
-          const networkId = await props.env.wallet.getNetworkId();
-          const API = new BlockFrostAPI(networkId);
-          const health = await API.health();
-          if (BlockFrostTypes.isHealth(health)) {
-            setIsHealth(health.is_healthy);
-          } else {
-            setIsHealth(false);
-          }
-        } catch (err: any) {
-          return;
+        const networkId = await props.env.wallet.getNetworkId();
+        const API = new BlockFrostAPI(networkId);
+        const health = await API.health();
+        if (BlockFrostTypes.isHealth(health)) {
+          setIsHealth(health.is_healthy);
+        } else {
+          setIsHealth(false);
         }
       }
-    };
-    exec();
+    } catch (err: any) {
+      setIsHealth(false);
+      return;
+    }
+  };
+
+  useInterval(checkHealth, 30000);
+
+  React.useEffect(() => {
+    checkHealth();
   }, [props.env.wallet]);
 
   React.useEffect(() => {
@@ -448,5 +453,3 @@ function TermsOfUse() {
     </Box>
   );
 }
-
-export default Layout;
