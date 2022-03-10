@@ -222,14 +222,13 @@ const faqItems: { question: string; answer: JSX.Element; tags: string[] }[] = [
     answer: (
       <VStack spacing="1">
         <FAQText>
-          The most basic form of transactions on Cardano sends assets
-          (NFTs/tokens/ada) from one wallet to another. But we can construct
-          more sophiscticated transactions. For example, we could have Bob send
-          1 SpaceBud NFT to Alice and in the same transaction have Alice send 1
-          Clay Nation NFT to Bob. This is what Atomic Swap does; it puts what
-          you and your trading partner is sending into the same transaction.
-          Meaning that Bob can be absolutly sure that if Bob sends his SpaceBud
-          NFT using Atomic Swap he will receive Alice&apos;s Clay Nation NFT.
+          Cardano allow multiple people to send/receive assets in the same
+          transaction. For example, we could have Bob send 1 SpaceBud NFT to
+          Alice and in the same transaction have Alice send 1 Clay Nation NFT to
+          Bob. This is what Atomic Swap does. It puts what you and your trading
+          partner is sending into the same transaction. Meaning that Bob can be
+          absolutly sure that if Bob sends his SpaceBud NFT using Atomic Swap he
+          will receive Alice&apos;s Clay Nation NFT.
         </FAQText>
         <FAQText>
           You will find a deeper explenation of how Atomic Swap works in the{" "}
@@ -250,8 +249,8 @@ const faqItems: { question: string; answer: JSX.Element; tags: string[] }[] = [
           <TextLink href="https://cardanoscan.io/" isExternal={true}>
             cardanoscan
           </TextLink>{" "}
-          after you have made a successful swap. So there is no way for anyone
-          to get screwed since your funds will only be transferred if they also
+          after you have made a successful swap. There is no way for anyone to
+          get screwed since your funds will only be transferred if they also
           transfer their funds at the same time.
         </FAQText>
       </VStack>
@@ -263,11 +262,11 @@ const faqItems: { question: string; answer: JSX.Element; tags: string[] }[] = [
     answer: (
       <VStack spacing="1">
         <FAQText>
-          Atomic Swap is not using smart contracts, instead it is using multisig
-          transactions. It means that the swap is faster (only one transaction
-          instead of at least two), more secure (there can not be any bugs in
-          the smart contract if there is no smart contract), and cheaper
-          (because there is only one transaction and it is small).
+          No, Atomic Swap is not using smart contracts. Instead it is using
+          multisig transactions that are faster (only one transaction instead of
+          at least two), more secure (there can not be any bugs in the smart
+          contract if there is no smart contract), and cheaper (because there is
+          only one transaction and it is small).
         </FAQText>
       </VStack>
     ),
@@ -301,7 +300,7 @@ const faqItems: { question: string; answer: JSX.Element; tags: string[] }[] = [
     tags: ["Team", "Twitter", "Personal Webpage"],
   },
   {
-    question: "Got a logo I can use?",
+    question: "Where can I download the Atomic Swap logo?",
     answer: (
       <FAQText>
         You find marketing material at this{" "}
