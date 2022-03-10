@@ -846,8 +846,8 @@ function ThereIsNoOneHere(props: {
             </Button>
           </ToolTip>
         </Copy>
-        <QRCode value={props.link} width={200} height={200}></QRCode>
       </VStack>
+      <QRCode value={props.link} width={200} height={200}></QRCode>
       <VStack spacing={8}>
         <Text textAlign={"center"} fontSize={["lg", "xl"]}>
           Or
