@@ -33,7 +33,8 @@ export const BLOCKFROST_ID_TESTNET = "...";
 7. `npm run build`
 
 Note: there is currently a bug in chakra-ui that causes builds to fail see this [issue](https://github.com/chakra-ui/chakra-ui/issues/5714).
-The best way to resolve it for now is to replace "ColorAdjust" with "PrintColorAdjust" at "node_modules/@chakra-ui/menu/dist/declarations/src/use-menu.d.ts:480:50" and "node_modules/@chakra-ui/menu/dist/declarations/src/use-menu.d.ts:986:61"
+The best way to resolve it for now is to replace "ColorAdjust" with "PrintColorAdjust" at
+"node_modules/@chakra-ui/menu/dist/declarations/src/use-menu.d.ts:480:50" and "node_modules/@chakra-ui/menu/dist/declarations/src/use-menu.d.ts:986:61"
 
 ### Serving
 
