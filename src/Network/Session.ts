@@ -1001,6 +1001,7 @@ export type TradeMissMatchKind =
   | "AddressNotMatching"
   | "NoAddress"
   | "UtxosNotMatching"
+  | "MissingWallet"
   | "MustBeOnSameNetwork";
 
 export type TradeMissMatch = {
@@ -1012,7 +1013,23 @@ export type TradeMissMatch = {
 export function tradeMissMatch(fullState: FullState): TradeMissMatch[] {
   const errors: TradeMissMatch[] = [];
 
-  const tips = " (unfreeze and then freeze again to fix.)";
+  const tips = " (unlock and then lock again to fix.)";
+
+  if (fullState.myOffer.networkID === null) {
+    errors.push({
+      kind: "MissingWallet",
+      who: "I",
+      msg: "You must connect your wallet.",
+    });
+  }
+
+  if (fullState.theirOffer.networkID === null) {
+    errors.push({
+      kind: "MissingWallet",
+      who: "Them",
+      msg: "They have not connected their wallet! You must unlock and they must connect their wallet.",
+    });
+  }
 
   if (
     fullState.theirOffer.networkID !== fullState.myOffer.networkID ||
