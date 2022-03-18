@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from "react";
 import { Route, Routes } from "react-router-dom";
-import { BasicWallet } from "./Cardano/CIP30/Wallet";
+import { BasicWallet } from "cardano-web-bridge-wrapper/lib/BasicWallet";
 import { Env } from "./Env";
 import SessionHolder from "./Network/SessionHolder";
 import * as NetworkSession from "./Network/Session";

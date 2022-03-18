@@ -11,7 +11,8 @@ import type {
   TransactionWitnessSet,
   AssetName,
 } from "@emurgo/cardano-serialization-lib-browser";
-import { NetworkID, BasicWallet } from "./CIP30/Wallet";
+import { BasicWallet } from "cardano-web-bridge-wrapper/lib/BasicWallet";
+import { NetworkID } from "cardano-web-bridge-wrapper/lib/Wallet";
 import BlockFrostAPI from "../API/BlockFrost/BlockFrostAPI";
 import * as Types from "../API/BlockFrost/Types";
 import * as BigNumExtra from "./BigNumExtra";

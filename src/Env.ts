@@ -1,4 +1,4 @@
-import { BasicWallet } from "./Cardano/CIP30/Wallet";
+import { BasicWallet } from "cardano-web-bridge-wrapper/lib/BasicWallet";
 
 export type Env = {
   wallet: BasicWallet | undefined;

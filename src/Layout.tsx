@@ -35,7 +35,7 @@ import * as NetworkSession from "./Network/Session";
 import * as Icons from "./components/Icons";
 import React from "react";
 import WalletSelector from "./components/WalletSelector";
-import { BasicWallet } from "./Cardano/CIP30/Wallet";
+import { BasicWallet } from "cardano-web-bridge-wrapper/lib/BasicWallet";
 import ToolTip from "./components/ToolTip";
 import BlockFrostAPI from "./API/BlockFrost/BlockFrostAPI";
 import * as BlockFrostTypes from "./API/BlockFrost/Types";

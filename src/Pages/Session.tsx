@@ -25,7 +25,9 @@ import AssetSelector from "../components/AssetSelector";
 import * as CardanoAsset from "../Cardano/Asset";
 import * as NetworkSession from "../Network/Session";
 import * as TxBuilder from "../Cardano/TxBuilder";
-import { BasicWallet, NetworkID } from "../Cardano/CIP30/Wallet";
+import { BasicWallet, isWebBridgeError } from "cardano-web-bridge-wrapper/lib";
+import * as APIError from "cardano-web-bridge-wrapper/lib/errors/APIError";
+import { NetworkID } from "cardano-web-bridge-wrapper/lib/";
 import * as ValueExtra from "../Cardano/ValueExtra";
 import * as BigNumExtra from "../Cardano/BigNumExtra";
 import Header from "../components/Header";
@@ -459,9 +461,9 @@ function toastOnTxFail(err: any, toast: any) {
       duration: 9000,
       isClosable: true,
     });
-  } else if (typeof err.code === "string" || typeof err.info === "string") {
+  } else if (isWebBridgeError(err)) {
     toast({
-      title: err.code,
+      title: err.stringCode(),
       description: err.info,
       status: "error",
       duration: 9000,

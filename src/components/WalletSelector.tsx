@@ -13,8 +13,8 @@ import {
   Image,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { CIP30InitalAPI, isCIP30InitalAPI } from "../Cardano/CIP30/API";
-import { buildBasicWallet, BasicWallet } from "../Cardano/CIP30/Wallet";
+import * as CIP30 from "cardano-web-bridge-wrapper/lib/CIP30";
+import { BasicWallet } from "cardano-web-bridge-wrapper/lib/BasicWallet";
 import { Ghost } from "./ChakraKawaii";
 import colors from "../Theme/colors";
 import * as CardanoSerializationLib from "@emurgo/cardano-serialization-lib-browser";
@@ -34,7 +34,7 @@ export default function WalletSelector(props: {
 
   for (const property in window.cardano) {
     const api: any = window.cardano[property];
-    if (isCIP30InitalAPI(api)) {
+    if (CIP30.isInitalAPI(api)) {
       walletChoices.push(
         <WalletChoice
           lib={props.lib}
@@ -75,7 +75,7 @@ function NoWallet() {
 }
 
 function WalletChoice(props: {
-  api: CIP30InitalAPI<any>;
+  api: CIP30.InitalAPI<any>;
   onWalletChange: (wallet: BasicWallet) => void;
   lib: typeof CardanoSerializationLib;
 }) {
@@ -95,7 +95,7 @@ function WalletChoice(props: {
       cursor={"pointer"}
       onClick={async () => {
         const fullAPI = await props.api.enable();
-        props.onWalletChange(buildBasicWallet(props.api, fullAPI, props.lib));
+        props.onWalletChange(new BasicWallet(props.api, fullAPI, props.lib));
       }}
       width={"full"}
       rounded={8}
