@@ -25,9 +25,11 @@ import AssetSelector from "../components/AssetSelector";
 import * as CardanoAsset from "../Cardano/Asset";
 import * as NetworkSession from "../Network/Session";
 import * as TxBuilder from "../Cardano/TxBuilder";
-import { BasicWallet, isWebBridgeError } from "cardano-web-bridge-wrapper/lib";
-import * as APIError from "cardano-web-bridge-wrapper/lib/errors/APIError";
-import { NetworkID } from "cardano-web-bridge-wrapper/lib/";
+import {
+  BasicWallet,
+  isWebBridgeError,
+  NetworkID,
+} from "cardano-web-bridge-wrapper/lib";
 import * as ValueExtra from "../Cardano/ValueExtra";
 import * as BigNumExtra from "../Cardano/BigNumExtra";
 import Header from "../components/Header";
