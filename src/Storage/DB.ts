@@ -1,5 +1,5 @@
+import { NetworkID } from "cardano-web-bridge-wrapper";
 import Dexie, { Table } from "dexie";
-import { NetworkID } from "../Cardano/CIP30/Wallet";
 
 export type IAssetIdentifierData = {
   id?: number;

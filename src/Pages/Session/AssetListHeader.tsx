@@ -1,11 +1,11 @@
 import { HStack, VStack, Heading } from "@chakra-ui/react";
 import { BigNum } from "@emurgo/cardano-serialization-lib-browser";
-import { NetworkID } from "../../Cardano/CIP30/Wallet";
 import CommissionInfo from "./CommissionInfo";
 import TestnetTag from "../../components/TestnetTag";
 import Address from "./Address";
 import * as Cardano from "@emurgo/cardano-serialization-lib-browser";
 import Hidden from "../../components/Hidden";
+import { NetworkID } from "cardano-web-bridge-wrapper";
 
 export default function AssetListHeader(props: {
   text: string;

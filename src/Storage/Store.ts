@@ -1,4 +1,4 @@
-import { NetworkID } from "../Cardano/CIP30/Wallet";
+import { NetworkID } from "cardano-web-bridge-wrapper";
 import Observable from "../Util/Behavior/Observable";
 import * as MathUtil from "../Util/Math";
 

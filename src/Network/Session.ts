@@ -7,7 +7,6 @@ import type {
   TransactionWitnessSet,
   Value,
 } from "@emurgo/cardano-serialization-lib-browser";
-import { NetworkID } from "../Cardano/CIP30/Wallet";
 import * as ValueExtra from "../Cardano/ValueExtra";
 import * as Util from "../Util";
 import { Channel, ChannelState } from "./Channel";
@@ -17,6 +16,7 @@ import * as TTLBound from "./TTLBound";
 import Observable from "../Util/Behavior/Observable";
 import CardanoSerializationLib from "@emurgo/cardano-serialization-lib-browser";
 import * as Extra from "../Util/Extra";
+import { NetworkID } from "cardano-web-bridge-wrapper";
 
 export class Session {
   private lib: typeof CardanoSerializationLib;

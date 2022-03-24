@@ -1,9 +1,9 @@
 import { Center, Text, Box, useColorModeValue } from "@chakra-ui/react";
 import * as Extra from "../../Util/Extra";
 import * as Cardano from "@emurgo/cardano-serialization-lib-browser";
-import { NetworkID } from "../../Cardano/CIP30/Wallet";
 import Copy from "../../components/Copy";
 import ToolTip from "../../components/ToolTip";
+import { NetworkID } from "cardano-web-bridge-wrapper";
 
 export default function Address(props: {
   isTesting: boolean;

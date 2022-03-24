@@ -29,11 +29,11 @@ import { Field, Form, Formik } from "formik";
 import * as CardanoUtil from "../../Cardano/Util";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, IAssetIdentifierData } from "../../Storage/DB";
-import { NetworkID } from "../../Cardano/CIP30/Wallet";
 import SelectGroup from "../../components/SelectGroup";
 import { Ghost } from "../../components/ChakraKawaii";
 import colors from "../../Theme/colors";
 import { Layout } from "./Layout";
+import { NetworkID } from "cardano-web-bridge-wrapper";
 
 export default function AssetVerification(): JSX.Element {
   const layout: "vertical" | "horizontal" | undefined = useBreakpointValue({
