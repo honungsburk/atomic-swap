@@ -7,13 +7,13 @@ import type {
 } from "@emurgo/cardano-serialization-lib-browser";
 import * as CardanoUtil from "./Util";
 import * as CachingAPI from "../API/Caching";
-import { NetworkID } from "./CIP30/Wallet";
 import * as Types from "../API/BlockFrost/Types";
 import adaLight from "../assets/img/ada-light-128x128.png";
 import adaDark from "../assets/img/ada-dark-128x128.png";
 import BlockFrostAPI from "../API/BlockFrost/BlockFrostAPI";
 import * as CardanoSerializationLib from "@emurgo/cardano-serialization-lib-browser";
 import * as Extra from "../Util/Extra";
+import { NetworkID } from "cardano-web-bridge-wrapper";
 
 ////////////////////////////////////////////////////////////////////////////////
 // Unions
