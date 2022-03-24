@@ -1,7 +1,7 @@
 import { Button, useDisclosure } from "@chakra-ui/react";
-import { BasicWallet } from "../Cardano/CIP30/Wallet";
 import WalletSelector from "./WalletSelector";
 import * as CardanoSerializationLib from "@emurgo/cardano-serialization-lib-browser";
+import { BasicWallet } from "cardano-web-bridge-wrapper";
 
 export default function WalletConnectButton(props: {
   text?: string;
