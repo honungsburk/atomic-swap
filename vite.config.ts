@@ -15,7 +15,9 @@ export default defineConfig(({ mode }) => {
     plugins: [
       wasm(),
       topLevelAwait(),
-      react(),
+      react({
+        fastRefresh: process.env.NODE_ENV !== "test",
+      }),
       VitePWA({
         registerType: "autoUpdate",
         includeAssets: [

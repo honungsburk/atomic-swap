@@ -27,7 +27,7 @@ import { VariableSizeList } from "react-window";
  * @param font the font that is being used
  * @returns the number of lines
  */
-export function nbrLines(
+export function nbrLinesToShow(
   s: string,
   maxWidth: number,
   textMeasure: (s: string) => number
@@ -84,7 +84,7 @@ export function TextChatInput(props: {
   // Calculate the width of the text to determine appropriate height
   if (textAreaEl.current) {
     const font = TextMeasure.getCanvasFontSize(textAreaEl.current);
-    lines = nbrLines(props.value, 170, (s) =>
+    lines = nbrLinesToShow(props.value, 170, (s) =>
       TextMeasure.getTextWidth(s, font)
     );
   }

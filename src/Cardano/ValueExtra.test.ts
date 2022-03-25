@@ -1,4 +1,4 @@
-import * as Cardano from "@emurgo/cardano-serialization-lib-browser";
+import * as Cardano from "@emurgo/cardano-serialization-lib-asmjs";
 import * as ValueExtra from "./ValueExtra";
 import * as TestUtil from "./TestUtil";
 

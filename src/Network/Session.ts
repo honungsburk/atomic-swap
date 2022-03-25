@@ -1097,8 +1097,8 @@ export function tradeMissMatch(fullState: FullState): TradeMissMatch[] {
   }
 
   if (
-    fullState.myOffer.address === undefined ||
-    fullState.theirViewOfTheirOffer.address === undefined
+    fullState.myOffer.address === null ||
+    fullState.theirViewOfTheirOffer.address === null
   ) {
     errors.push({
       kind: "NoAddress",
@@ -1108,8 +1108,8 @@ export function tradeMissMatch(fullState: FullState): TradeMissMatch[] {
   }
 
   if (
-    fullState.theirOffer.address === undefined ||
-    fullState.theirViewOfMyOffer.address === undefined
+    fullState.theirOffer.address === null ||
+    fullState.theirViewOfMyOffer.address === null
   ) {
     errors.push({
       kind: "NoAddress",

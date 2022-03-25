@@ -7,11 +7,11 @@ import {
   AssetName,
   Address,
   TransactionBuilder,
-} from "@emurgo/cardano-serialization-lib-browser";
+} from "@emurgo/cardano-serialization-lib-asmjs";
 import * as CardanoUtil from "./Util";
 import * as TestUtil from "./TestUtil";
 import * as ValueExtra from "./ValueExtra";
-import * as Cardano from "@emurgo/cardano-serialization-lib-browser";
+import * as Cardano from "@emurgo/cardano-serialization-lib-asmjs";
 import * as Extra from "../Util/Extra";
 
 const mkScriptHash = TestUtil.mkScriptHash(Cardano);

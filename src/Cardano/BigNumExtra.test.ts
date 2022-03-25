@@ -1,6 +1,6 @@
 import * as BigNumExtra from "./BigNumExtra";
-import { BigNum } from "@emurgo/cardano-serialization-lib-browser";
-import * as Cardano from "@emurgo/cardano-serialization-lib-browser";
+import { BigNum } from "@emurgo/cardano-serialization-lib-asmjs";
+import * as Cardano from "@emurgo/cardano-serialization-lib-asmjs";
 
 ////////////////////////////////////////////////////////////////////////////////
 // BigNumExtra.eq
