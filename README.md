@@ -24,7 +24,7 @@ export const BLOCKFROST_ID_TESTNET = "...";
 
 ### Install & Build
 
-1. `npm install --save --legacy-peer-deps react-kawaii react-custom-scrollbars `
+1. `npm install --save --legacy-peer-deps react-kawaii `
 2. `cd functions`
 3. `npm install`
 4. Add secrets as explained in "Handling Secrets"
