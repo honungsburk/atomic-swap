@@ -17,6 +17,10 @@ export default function ChangeLog() {
           Changelog
         </Heading>
         <VStack spacing={3} width={"fill"} align="left">
+        <Entry title="Fully Open Source" version="1.7.0" date="2022-04-28">
+            <Add>Open Source</Add>
+            <Add>Link to github repository</Add>
+          </Entry>
           <Entry title="Safer Trading" version="1.6.0" date="2022-03-04">
             <Add>Add code splitting.</Add>
             <Add>Asset verification using blacklists/whitelists.</Add>

@@ -12,6 +12,7 @@ import {
   FaBook,
   FaDiscord,
   FaTwitter,
+  FaGithub,
   FaYoutube,
   FaQuestion,
   FaMap,
@@ -196,6 +197,10 @@ export function Youtube(props: IconProps) {
 
 export function Twitter(props: IconProps) {
   return <Icon {...props} as={FaTwitter} />;
+}
+
+export function Github(props: IconProps) {
+  return <Icon {...props} as={FaGithub} />;
 }
 
 // Wallet
