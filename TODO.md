@@ -16,3 +16,5 @@ You can think of this as the step before I create a task.
 - Refactor and use Text & Layer Styles (Chakra UI)
 - Refactor to use Semantic Tokens (Chakra UI)
 - Upgrade to React 18
+- npm audit
+- Move to Github
