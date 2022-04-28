@@ -23,7 +23,6 @@ import Layout from "./Layout";
 // Lazy load routes to allow for code splitting.
 const Home = lazy(() => import("./Pages/Home"));
 const Success = lazy(() => import("./Pages/Success"));
-const Roadmap = lazy(() => import("./Pages/Roadmap"));
 const WhitePaper = lazy(() => import("./Pages/WhitePaper"));
 const ChangeLog = lazy(() => import("./Pages/ChangeLog"));
 const Trade = lazy(() => import("./Pages/Trade"));
@@ -271,14 +270,6 @@ function App() {
               element={
                 <PageErrorBoundary>
                   <FAQ />
-                </PageErrorBoundary>
-              }
-            />
-            <Route
-              path="/roadmap"
-              element={
-                <PageErrorBoundary>
-                  <Roadmap />
                 </PageErrorBoundary>
               }
             />

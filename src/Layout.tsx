@@ -298,9 +298,6 @@ function Info(props: { px?: number }) {
           <Link href="https://www.youtube.com/watch?v=XdE0aK5ypWM" isExternal>
             <MenuItem icon={<Icons.Youtube />}>How to video</MenuItem>
           </Link>
-          <Link as={ReachLink} to="/roadmap">
-            <MenuItem icon={<Icons.Map />}>Roadmap</MenuItem>
-          </Link>
           <Link as={ReachLink} to="/whitepaper">
             <MenuItem icon={<Icons.WhitePaper />}>White Paper</MenuItem>
           </Link>
@@ -415,7 +412,7 @@ function Footer() {
       px={{ base: "4", md: "8" }}
     >
       <HStack>
-      <Link href="https://github.com/honungsburk/atomic-swap" target="_blank">
+        <Link href="https://github.com/honungsburk/atomic-swap" target="_blank">
           <Icon w={8} h={8} color={iconColor} as={Icons.Github} />
         </Link>
         <Link href="https://discord.gg/ZqpN4TuJ6a" target="_blank">
