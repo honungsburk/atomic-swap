@@ -18,3 +18,4 @@ You can think of this as the step before I create a task.
 - Upgrade to React 18
 - npm audit
 - Move to Github
+- Fix issue with "PrintColorAdjust"
