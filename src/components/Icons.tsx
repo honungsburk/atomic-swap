@@ -114,7 +114,7 @@ export function UpdateChangelog(props: IconProps) {
   return <Icon {...props} as={FaInfoCircle} />;
 }
 
-export function ubtractionChangelog(props: IconProps) {
+export function SubtractionChangelog(props: IconProps) {
   return <Icon {...props} as={FaMinusCircle} />;
 }
 

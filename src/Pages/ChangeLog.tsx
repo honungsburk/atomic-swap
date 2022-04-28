@@ -7,7 +7,11 @@ import {
   ListIcon,
   ListItem,
 } from "@chakra-ui/react";
-import { AdditionChangelog, UpdateChangelog } from "../components/Icons";
+import {
+  AdditionChangelog,
+  UpdateChangelog,
+  SubtractionChangelog,
+} from "../components/Icons";
 
 export default function ChangeLog() {
   return (
@@ -17,9 +21,12 @@ export default function ChangeLog() {
           Changelog
         </Heading>
         <VStack spacing={3} width={"fill"} align="left">
-        <Entry title="Fully Open Source" version="1.7.0" date="2022-04-28">
-            <Add>Open Source</Add>
-            <Add>Link to github repository</Add>
+          <Entry title="Fully Open Source" version="1.7.0" date="2022-04-28">
+            <Add>Open Source the project</Add>
+            <Add>Add link to the Github repository</Add>
+            <Delete>
+              Remove the &apos;Roadmap&apos; page (all features are implemented)
+            </Delete>
           </Entry>
           <Entry title="Safer Trading" version="1.6.0" date="2022-03-04">
             <Add>Add code splitting.</Add>
@@ -110,6 +117,17 @@ function Entry(props: {
       </VStack>
       <List spacing={1}>{props.children}</List>
     </VStack>
+  );
+}
+
+function Delete(props: {
+  children: (string | JSX.Element)[] | string | JSX.Element;
+}) {
+  return (
+    <ListItem>
+      <ListIcon as={SubtractionChangelog} color="failure.500" />
+      {props.children}
+    </ListItem>
   );
 }
 
