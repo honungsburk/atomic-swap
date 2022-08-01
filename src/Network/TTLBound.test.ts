@@ -1,4 +1,5 @@
 import * as TTLBound from "./TTLBound";
+import { expect, test } from "vitest";
 
 test("TTLBound.maxTTL - find the max bound", () => {
   const bound1 = TTLBound.initTTL();

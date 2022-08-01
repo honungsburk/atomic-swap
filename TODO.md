@@ -3,6 +3,7 @@
 A simple list of features and improvements that could be added to Atomic Swap.
 You can think of this as the step before I create a task.
 
+- Need to update to support latest Cardano after fork...
 - Support for Ergo
 - Show the image of NFTs
 - Make sure the app can operate even if blockfrost is down

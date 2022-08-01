@@ -1,7 +1,7 @@
-import * as Cardano from "@emurgo/cardano-serialization-lib-asmjs";
+import * as Cardano from "@emurgo/cardano-serialization-lib-nodejs";
 import * as ValueExtra from "./ValueExtra";
 import * as TestUtil from "./TestUtil";
-
+import { expect, test } from "vitest";
 const mkScriptHash = TestUtil.mkScriptHash(Cardano);
 const mkAssetName = TestUtil.mkAssetName(Cardano);
 

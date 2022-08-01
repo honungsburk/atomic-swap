@@ -73,10 +73,10 @@ export type SimpleNativeAssets = {
 
 export const mkValue =
   (lib: typeof CardanoSerializationLib) =>
-  (ada: BigNum, nativeAssets: SimpleNativeAssets) => {
+  (ada: BigNum, nativeAssets?: SimpleNativeAssets) => {
     const value = lib.Value.new(ada);
     const mulAssets = lib.MultiAsset.new();
-    nativeAssets.forEach((asset) => {
+    nativeAssets?.forEach((asset) => {
       const assets = lib.Assets.new();
       asset.assets.forEach((namedAsset) =>
         assets.insert(namedAsset.assetName, namedAsset.amount)

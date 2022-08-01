@@ -1,3 +1,4 @@
+import { expect, test } from "vitest";
 import * as ListExtra from "./ListExtra";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -39,14 +40,38 @@ test("ListExtra.eq([], []) === true", () => {
   expect(ListExtra.eq(s1, s2)).toBeTruthy();
 });
 
-test("ListExtra.eq([], []) === true", () => {
+test("ListExtra.eq([1, 2, 3], [1, 2, 3]) === true", () => {
   const s1 = [1, 2, 3];
   const s2 = [1, 2, 3];
   expect(ListExtra.eq(s1, s2)).toBeTruthy();
 });
 
-test("ListExtra.eq([], []) === false", () => {
+test("ListExtra.eq([1, 3], [1, 2, 3]) === false", () => {
   const s1 = [1, 3];
   const s2 = [1, 2, 3];
   expect(ListExtra.eq(s1, s2)).toBeFalsy();
+});
+
+////////////////////////////////////////////////////////////////////////////////
+// ListExtra.hasIntersection()
+////////////////////////////////////////////////////////////////////////////////
+
+const hasIntersection = ListExtra.hasIntersection((e1, e2) => e1 === e2);
+
+test("ListExtra.hasIntersection([], [1, 2, 3]) === false", () => {
+  const s1: number[] = [];
+  const s2 = [1, 2, 3];
+  expect(hasIntersection(s1, s2)).toBeFalsy();
+});
+
+test("ListExtra.hasIntersection([4, 5, 6], [1, 2, 3]) === false", () => {
+  const s1 = [4, 5, 6];
+  const s2 = [1, 2, 3];
+  expect(hasIntersection(s1, s2)).toBeFalsy();
+});
+
+test("ListExtra.hasIntersection([1, 3], [1, 2, 3]) === true", () => {
+  const s1 = [1, 3];
+  const s2 = [1, 2, 3];
+  expect(hasIntersection(s1, s2)).toBeTruthy();
 });

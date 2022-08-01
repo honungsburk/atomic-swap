@@ -21,6 +21,7 @@ import * as CardanoUtil from "./Util";
 import * as TTLBound from "../Network/TTLBound";
 import * as CardanoSerializationLib from "@emurgo/cardano-serialization-lib-browser";
 import * as Extra from "../Util/Extra";
+import * as Util from "src/Util";
 
 export type OfferParams = {
   address: Address;
@@ -49,6 +50,7 @@ export async function createTTLBound(
 ): Promise<TTLBound.TTLBound> {
   const networkParameters = await initTx(networkID);
   const bound = TTLBound.initTTL();
+  console.log("slotnumber:", networkParameters.slot);
   bound.low = networkParameters.slot + 100;
   bound.high = networkParameters.slot + 88000; // About 24h before transaction is invalid
   return bound;
@@ -180,6 +182,26 @@ const mkBuilder =
     return txBuilder;
   };
 
+export function validUTxOs(
+  myUtxos: TransactionUnspentOutput[],
+  theirUtxos: TransactionUnspentOutput[]
+): boolean {
+  const eq = (
+    input1: CardanoSerializationLib.TransactionInput,
+    input2: CardanoSerializationLib.TransactionInput
+  ) => {
+    const sameTx =
+      input1.transaction_id().to_bech32("test") ===
+      input2.transaction_id().to_bech32("test");
+    const sameIndex = input1.index() === input2.index();
+    return sameTx && sameIndex;
+  };
+
+  return !Util.List.hasIntersection<TransactionUnspentOutput>((u1, u2) =>
+    eq(u1.input(), u2.input())
+  )(myUtxos, theirUtxos);
+}
+
 /**
  * Edge cases:
  *
@@ -201,6 +223,14 @@ export const constructTxBuilder =
     theirOffer: OfferParams,
     ttl: number
   ) => {
+    // Check that there is no overlapp in the UTxO set
+    // If there is an overlapp some shenanigans are going on
+
+    if (!validUTxOs(myOffer.utxos, theirOffer.utxos)) {
+      throw Error("Can not build transaction with incompatible UTxOs");
+    }
+
+    // outputs
     const outputs: TransactionOutput[] = [];
 
     // Commission
@@ -272,6 +302,7 @@ export const constructTxBuilder =
 
     let thereAreStillUTXOs = true;
     let iterations = 0;
+
     while (thereAreStillUTXOs && iterations < 100) {
       let myInputs: TransactionUnspentOutput[] = [];
       try {

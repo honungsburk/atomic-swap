@@ -1,3 +1,4 @@
+import { expect, test } from "vitest";
 import * as TxBuilder from "./TxBuilder";
 import {
   BigNum,
@@ -7,17 +8,45 @@ import {
   AssetName,
   Address,
   TransactionBuilder,
-} from "@emurgo/cardano-serialization-lib-asmjs";
+} from "@emurgo/cardano-serialization-lib-nodejs";
 import * as CardanoUtil from "./Util";
 import * as TestUtil from "./TestUtil";
 import * as ValueExtra from "./ValueExtra";
-import * as Cardano from "@emurgo/cardano-serialization-lib-asmjs";
+import * as Cardano from "@emurgo/cardano-serialization-lib-nodejs";
 import * as Extra from "../Util/Extra";
 
 const mkScriptHash = TestUtil.mkScriptHash(Cardano);
 const mkAssetName = TestUtil.mkAssetName(Cardano);
 const mkValue = TestUtil.mkValue(Cardano);
 const mkUtxo = TestUtil.mkUtxo(Cardano);
+
+////////////////////////////////////////////////////////////////////////////////
+// validUTxOs
+////////////////////////////////////////////////////////////////////////////////
+
+test("validUTxOs - no utxos", () => {
+  expect(TxBuilder.validUTxOs([], [])).toBeTruthy();
+});
+
+test("validUTxOs - only utxos in one", () => {
+  expect(
+    TxBuilder.validUTxOs([mkUtxo(1, mkValue(BigNum.from_str("10000000")))], [])
+  ).toBeTruthy();
+});
+
+test("validUTxOs - same utxo", () => {
+  const u1 = mkUtxo(1, mkValue(BigNum.from_str("10000000")));
+  expect(TxBuilder.validUTxOs([u1], [u1])).toBeFalsy();
+});
+
+test("validUTxOs - same utxo", () => {
+  const u1 = mkUtxo(1, mkValue(BigNum.from_str("10000000")));
+  const u2 = mkUtxo(2, mkValue(BigNum.from_str("10000000")));
+  const u3 = mkUtxo(3, mkValue(BigNum.from_str("10000000")));
+  const u4 = mkUtxo(4, mkValue(BigNum.from_str("10000000")));
+  expect(TxBuilder.validUTxOs([u1, u2, u3], [u4])).toBeTruthy();
+  expect(TxBuilder.validUTxOs([u1, u2, u3], [u4, u3])).toBeFalsy();
+});
 
 ////////////////////////////////////////////////////////////////////////////////
 // outputSelection

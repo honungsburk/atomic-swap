@@ -1,4 +1,5 @@
 import * as Types from "./Types";
+import { expect, test } from "vitest";
 
 test("Types.isBlockfrostServerError - can handle null and undefined", () => {
   expect(Types.isBlockfrostServerError(undefined)).toBeFalsy();

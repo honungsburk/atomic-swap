@@ -1,4 +1,5 @@
 import Observable from "./Observable";
+import { expect, test } from "vitest";
 
 test("Observable - can add an observable value", () => {
   const obs = new Observable<number>();

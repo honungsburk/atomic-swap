@@ -5,10 +5,11 @@ import * as TestUtil from "../Cardano/TestUtil";
 import {
   BigNum,
   TransactionWitnessSet,
-} from "@emurgo/cardano-serialization-lib-asmjs";
+} from "@emurgo/cardano-serialization-lib-nodejs";
 import * as TTLBound from "./TTLBound";
-import type { Address, Value } from "@emurgo/cardano-serialization-lib-asmjs";
-import * as Cardano from "@emurgo/cardano-serialization-lib-asmjs";
+import type { Address, Value } from "@emurgo/cardano-serialization-lib-nodejs";
+import * as Cardano from "@emurgo/cardano-serialization-lib-nodejs";
+import { expect, test } from "vitest";
 
 function createSessions(): [Session.Session, Session.Session] {
   const channel1 = new ChannelPure<any>("1");

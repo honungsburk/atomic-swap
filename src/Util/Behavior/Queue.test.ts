@@ -1,4 +1,5 @@
 import Queue from "./Queue";
+import { expect, test } from "vitest";
 
 test("Queue - can add an element and flush it", () => {
   const obs = new Queue<number>();

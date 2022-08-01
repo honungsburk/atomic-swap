@@ -1,3 +1,10 @@
+export * as Extra from "./Extra";
+export * as List from "./ListExtra";
+export * as Map from "./MapExtra";
+export * as Set from "./SetExtra";
+export * as Math from "./MapExtra";
+export * as Result from "./Result";
+
 /**
  *
  * @param length the length

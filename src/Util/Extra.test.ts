@@ -1,4 +1,5 @@
 import * as Extra from "./Extra";
+import { expect, test } from "vitest";
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extra.toHex & Extra.fromHex

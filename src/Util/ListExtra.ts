@@ -34,3 +34,23 @@ export function eq<A>(a: A[], b: A[]): boolean {
   }
   return true;
 }
+
+/**
+ *
+ * @param as the first list of values
+ * @param bs the second list of values
+ * @param eq the equality operator
+ * @returns whether or not there is an intersection
+ */
+export const hasIntersection =
+  <A>(eq: (a: A, b: A) => boolean) =>
+  (as: A[], bs: A[]): boolean => {
+    for (const a of as) {
+      for (const b of bs) {
+        if (eq(a, b)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
