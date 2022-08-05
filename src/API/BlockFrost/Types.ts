@@ -192,7 +192,8 @@ export type ProtocolParameters = {
   max_val_size: string;
   collateral_percent: number;
   max_collateral_inputs: number;
-  coins_per_utxo_word: string;
+  coins_per_utxo_word: string; // deprecated parameter
+  coins_per_utxo_size?: string; // new parameter in babbage
 };
 
 export type OutputAmount = {

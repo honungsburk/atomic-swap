@@ -3,17 +3,12 @@ import * as TxBuilder from "./TxBuilder";
 import {
   BigNum,
   Value,
-  MultiAsset,
-  Assets,
-  AssetName,
   Address,
   TransactionBuilder,
 } from "@emurgo/cardano-serialization-lib-nodejs";
-import * as CardanoUtil from "./Util";
 import * as TestUtil from "./TestUtil";
 import * as ValueExtra from "./ValueExtra";
 import * as Cardano from "@emurgo/cardano-serialization-lib-nodejs";
-import * as Extra from "../Util/Extra";
 
 const mkScriptHash = TestUtil.mkScriptHash(Cardano);
 const mkAssetName = TestUtil.mkAssetName(Cardano);
@@ -285,8 +280,8 @@ test("outputSelection - Send Nothing", () => {
   const utxos = outputSelection(
     receiver,
     Cardano.Value.zero(),
-    fakeFeeConfig.minUtxo,
-    fakeFeeConfig.coinsPerUtxoWord
+    fakeFeeConfig.coinsPerUtxoWord,
+    fakeFeeConfig.dataCost
   );
 
   expect(utxos.length).toBe(0);
@@ -300,8 +295,8 @@ test("outputSelection - Send 2 ADA", () => {
   const outputs = outputSelection(
     receiver,
     value,
-    fakeFeeConfig.minUtxo,
-    fakeFeeConfig.coinsPerUtxoWord
+    fakeFeeConfig.coinsPerUtxoWord,
+    fakeFeeConfig.dataCost
   );
 
   expect(ValueExtra.eq(value, sumOutputs(outputs))).toBeTruthy();
@@ -314,8 +309,8 @@ test("outputSelection - Send 0.5 ADA", () => {
   const outputs = outputSelection(
     receiver,
     value,
-    fakeFeeConfig.minUtxo,
-    fakeFeeConfig.coinsPerUtxoWord
+    fakeFeeConfig.coinsPerUtxoWord,
+    fakeFeeConfig.dataCost
   );
   const outputVal = sumOutputs(outputs);
 
@@ -342,8 +337,8 @@ test("outputSelection - Send 2 ADA + one asset", () => {
   const outputs = outputSelection(
     receiver,
     value,
-    fakeFeeConfig.minUtxo,
-    fakeFeeConfig.coinsPerUtxoWord
+    fakeFeeConfig.coinsPerUtxoWord,
+    fakeFeeConfig.dataCost
   );
   const outputVal = sumOutputs(outputs);
 
@@ -369,8 +364,8 @@ test("outputSelection - Send 0 ADA + 1 asset", () => {
   const outputs = outputSelection(
     fakeTheirAddress,
     value,
-    fakeFeeConfig.minUtxo,
-    fakeFeeConfig.coinsPerUtxoWord
+    fakeFeeConfig.coinsPerUtxoWord,
+    fakeFeeConfig.dataCost
   );
 
   const total = sumOutputs(outputs);
@@ -381,11 +376,13 @@ test("outputSelection - Send 0 ADA + 1 asset", () => {
   );
 
   // Check that extra amount is respected
-  const minADA = Cardano.min_ada_required(
-    total,
-    false,
-    fakeFeeConfig.coinsPerUtxoWord
-  );
+  const minADA = fakeFeeConfig.dataCost
+    ? Cardano.min_ada_for_output(
+        Cardano.TransactionOutput.new(TestUtil.mkAddress(Cardano)(0), total),
+        fakeFeeConfig.dataCost
+      )
+    : Cardano.min_ada_required(total, false, fakeFeeConfig.coinsPerUtxoWord);
+
   expect(minADA.compare(total.coin())).toBeLessThanOrEqual(0);
 });
 
@@ -927,138 +924,3 @@ function txBuilderInBalance(txBuilder: TransactionBuilder): boolean {
     : txBuilder.get_explicit_output();
   return input.compare(output) === 0;
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// TxBuilder.minADA(utxo, coinsPerUTxOWord)
-////////////////////////////////////////////////////////////////////////////////
-
-const coinsPerUtxoWord = BigNum.from_str("34482");
-const minADARequired = TxBuilder.minADARequired(Cardano);
-const toAssetName = CardanoUtil.toAssetName(Cardano);
-
-// Tests are taken from: https://github.com/input-output-hk/cardano-ledger/blob/master/doc/explanations/min-utxo-alonzo.rst
-
-test("TxBuilder.minADARequired - only ADA", () => {
-  const val = Value.new(BigNum.from_str("10"));
-
-  expect(minADARequired(val, false, coinsPerUtxoWord).to_str()).toEqual(
-    "999978"
-  );
-});
-
-test("TxBuilder.minADARequired - One policyID - no asset names", () => {
-  const val = Value.new(BigNum.from_str("10"));
-  const mulAsset = MultiAsset.new();
-  const rndScript = mkScriptHash(100);
-  const assets = Assets.new();
-  assets.insert(AssetName.new(new Uint8Array()), BigNum.from_str("1"));
-  mulAsset.insert(rndScript, assets);
-  val.set_multiasset(mulAsset);
-
-  expect(minADARequired(val, false, coinsPerUtxoWord).to_str()).toEqual(
-    "1310316"
-  );
-});
-
-test("TxBuilder.minADARequired - One policyID - one 1-character asset name", () => {
-  const val = Value.new(BigNum.from_str("10"));
-  const mulAsset = MultiAsset.new();
-  const rndScript = mkScriptHash(100);
-  const assets = Assets.new();
-  assets.insert(toAssetName(Extra.hexEncode("a")), BigNum.from_str("10"));
-  mulAsset.insert(rndScript, assets);
-  val.set_multiasset(mulAsset);
-
-  expect(minADARequired(val, false, coinsPerUtxoWord).to_str()).toEqual(
-    "1344798"
-  );
-});
-
-test("TxBuilder.minADARequired - One policyID - three 1-character asset name", () => {
-  const val = Value.new(BigNum.from_str("10"));
-  const mulAsset = MultiAsset.new();
-  const rndScript = mkScriptHash(100);
-  const assets = Assets.new();
-  for (let i = 0; i < 3; i++) {
-    const asset_name = i.toString();
-    assets.insert(
-      toAssetName(Extra.hexEncode(asset_name)),
-      BigNum.from_str("10")
-    );
-  }
-  mulAsset.insert(rndScript, assets);
-  val.set_multiasset(mulAsset);
-
-  expect(minADARequired(val, false, coinsPerUtxoWord).to_str()).toEqual(
-    "1448244"
-  );
-});
-
-test("TxBuilder.minADARequired - Two policyID - One 0-character asset name", () => {
-  const val = Value.new(BigNum.from_str("10"));
-  const mulAsset = MultiAsset.new();
-  const rndScript1 = mkScriptHash(100);
-  const rndScript2 = mkScriptHash(101);
-  const assets = Assets.new();
-  assets.insert(AssetName.new(new Uint8Array()), BigNum.from_str("1"));
-  mulAsset.insert(rndScript1, assets);
-  mulAsset.insert(rndScript2, assets);
-  val.set_multiasset(mulAsset);
-
-  expect(minADARequired(val, false, coinsPerUtxoWord).to_str()).toEqual(
-    "1482726"
-  );
-});
-
-test("TxBuilder.minADARequired - Two policyID - One 1-character asset name", () => {
-  const val = Value.new(BigNum.from_str("10"));
-  const mulAsset = MultiAsset.new();
-  const rndScript1 = mkScriptHash(100);
-  const rndScript2 = mkScriptHash(101);
-  const assets = Assets.new();
-  assets.insert(toAssetName(Extra.hexEncode("a")), BigNum.from_str("1"));
-  mulAsset.insert(rndScript1, assets);
-  mulAsset.insert(rndScript2, assets);
-  val.set_multiasset(mulAsset);
-  expect(minADARequired(val, false, coinsPerUtxoWord).to_str()).toEqual(
-    "1517208"
-  );
-});
-
-test("TxBuilder.minADARequired - Three policyID - ninety-six 1-character asset name in total", () => {
-  const val = Value.new(BigNum.from_str("10"));
-  const mulAsset = MultiAsset.new();
-  const rndScript1 = mkScriptHash(100);
-  const rndScript2 = mkScriptHash(101);
-  const rndScript3 = mkScriptHash(103);
-
-  const assets = Assets.new();
-  for (let i = 0; i < 32; i++) {
-    const asset_name = String.fromCharCode(i);
-    assets.insert(
-      toAssetName(Extra.hexEncode(asset_name)),
-      BigNum.from_str("1")
-    );
-  }
-  mulAsset.insert(rndScript1, assets);
-  mulAsset.insert(rndScript2, assets);
-  mulAsset.insert(rndScript3, assets);
-  val.set_multiasset(mulAsset);
-  expect(minADARequired(val, false, coinsPerUtxoWord).to_str()).toEqual(
-    "6896400"
-  );
-});
-
-test("TxBuilder.minADARequired - One policyID - no asset names + datum", () => {
-  const val = Value.new(BigNum.from_str("10"));
-  const mulAsset = MultiAsset.new();
-  const rndScript = mkScriptHash(100);
-  const assets = Assets.new();
-  assets.insert(AssetName.new(new Uint8Array()), BigNum.from_str("1"));
-  mulAsset.insert(rndScript, assets);
-  val.set_multiasset(mulAsset);
-
-  expect(minADARequired(val, true, coinsPerUtxoWord).to_str()).toEqual(
-    "1655136"
-  );
-});

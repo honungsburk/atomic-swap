@@ -19,7 +19,7 @@ export const mkScriptHash =
   (lib: typeof CardanoSerializationLib) => (scriptNumber: number) => {
     const script = lib.NativeScript.new_timelock_start(
       lib.TimelockStart.new(scriptNumber)
-    ).hash(0);
+    ).hash();
     return lib.ScriptHash.from_bech32(script.to_bech32("script"));
   };
 

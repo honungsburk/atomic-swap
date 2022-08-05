@@ -10,6 +10,7 @@ import type {
   Transaction,
   TransactionWitnessSet,
   AssetName,
+  DataCost,
 } from "@emurgo/cardano-serialization-lib-browser";
 import { BasicWallet } from "cardano-web-bridge-wrapper/lib/BasicWallet";
 import { NetworkID } from "cardano-web-bridge-wrapper/lib/Wallet";
@@ -22,6 +23,7 @@ import * as TTLBound from "../Network/TTLBound";
 import * as CardanoSerializationLib from "@emurgo/cardano-serialization-lib-browser";
 import * as Extra from "../Util/Extra";
 import * as Util from "src/Util";
+import * as TestUtil from "./TestUtil";
 
 export type OfferParams = {
   address: Address;
@@ -36,7 +38,8 @@ export type FeeConfig = {
   keyDeposit: BigNum;
   maxValSize: number;
   maxTxSize: number;
-  coinsPerUtxoWord: BigNum;
+  coinsPerUtxoWord: BigNum; // Legacy parameter
+  dataCost?: DataCost;
 };
 
 export type Commission = {
@@ -158,13 +161,24 @@ const mkBuilder =
     outputs: TransactionOutput[],
     feeConfig: FeeConfig
   ) => {
-    const configBuilder = lib.TransactionBuilderConfigBuilder.new()
-      .coins_per_utxo_word(feeConfig.coinsPerUtxoWord)
+    let configBuilder = lib.TransactionBuilderConfigBuilder.new()
       .fee_algo(feeConfig.linearFee)
       .max_tx_size(feeConfig.maxTxSize)
       .key_deposit(feeConfig.keyDeposit)
       .max_value_size(feeConfig.maxValSize)
       .pool_deposit(feeConfig.poolDepsit);
+
+    if (feeConfig.dataCost) {
+      console.log("dataCost");
+      configBuilder = configBuilder.coins_per_utxo_byte(
+        feeConfig.dataCost.coins_per_byte()
+      );
+    } else {
+      console.log("coins_per_utxo_word");
+      configBuilder = configBuilder.coins_per_utxo_word(
+        feeConfig.coinsPerUtxoWord
+      );
+    }
 
     const txBuilder = lib.TransactionBuilder.new(configBuilder.build());
 
@@ -248,8 +262,8 @@ export const constructTxBuilder =
     const whatIRecieve = outputSelection(lib)(
       myOffer.address,
       theirOffer.value,
-      feeConfig.minUtxo,
-      feeConfig.coinsPerUtxoWord
+      feeConfig.coinsPerUtxoWord,
+      feeConfig.dataCost
     );
     const extraINeedToAdd = sumOutputs(lib)(whatIRecieve).checked_sub(
       theirOffer.value
@@ -262,8 +276,8 @@ export const constructTxBuilder =
     const whatTheyRecieve = outputSelection(lib)(
       theirOffer.address,
       myOffer.value,
-      feeConfig.minUtxo,
-      feeConfig.coinsPerUtxoWord
+      feeConfig.coinsPerUtxoWord,
+      feeConfig.dataCost
     );
     const extraTheyNeedToAdd = sumOutputs(lib)(whatTheyRecieve).checked_sub(
       myOffer.value
@@ -355,14 +369,14 @@ export const constructTxBuilder =
       const myUtxosBack: TransactionOutput[] = outputSelection(lib)(
         myOffer.address,
         myChangeEstimate,
-        feeConfig.minUtxo,
-        feeConfig.coinsPerUtxoWord
+        feeConfig.coinsPerUtxoWord,
+        feeConfig.dataCost
       );
       const theirUtxosBack: TransactionOutput[] = outputSelection(lib)(
         theirOffer.address,
         theirChangeEstimate,
-        feeConfig.minUtxo,
-        feeConfig.coinsPerUtxoWord
+        feeConfig.coinsPerUtxoWord,
+        feeConfig.dataCost
       );
 
       //Since we need to cover the min UTxO amount we might overflow
@@ -650,46 +664,13 @@ export const sumUtxos =
     return total;
   };
 
-/**
- * You find a good explenation as to the algorithm here:
- * https://github.com/input-output-hk/cardano-ledger/blob/master/doc/explanations/min-utxo-alonzo.rst
- *
- * @param utxo
- * @param coinsPerUTxOWord
- * @returns the minimum amount of ada the utxo need to contain to be valid
- */
-export const minADARequired =
-  (lib: typeof CardanoSerializationLib) =>
-  (val: Value, hasDataHash: boolean, coinsPerUTxOWord: BigNum) => {
-    const utxoEntrySizeWithoutVal = 27; // Protocol parameter
-    const dataHashSize = hasDataHash ? 10 : 0; // Protocol parameter
-    let totalSize: BigNum = lib.BigNum.zero();
-
-    //The calculation is different if there is only ada
-    const number_of_assets = val.multiasset()?.len();
-    if (number_of_assets === undefined || number_of_assets === 0) {
-      // This is apparently accepted though It is lower then the stated 1,000,000 lovelace
-      const coinSize = 2;
-      totalSize = lib.BigNum.from_str(
-        (coinSize + dataHashSize + utxoEntrySizeWithoutVal).toString()
-      );
-    } else {
-      const size = ValueExtra.sizeOfValue(val);
-      totalSize = lib.BigNum.from_str(
-        (size + dataHashSize + utxoEntrySizeWithoutVal).toString()
-      );
-    }
-
-    return coinsPerUTxOWord.checked_mul(totalSize);
-  };
-
 export const outputSelection =
   (lib: typeof CardanoSerializationLib) =>
   (
     reciever: Address,
     value: Value,
-    minUtxo: BigNum,
-    coinsPerUtxoWord: BigNum
+    coinsPerUtxoWord: BigNum,
+    dataCost?: DataCost
   ) => {
     const outputs: TransactionOutput[] = [];
 
@@ -699,12 +680,21 @@ export const outputSelection =
 
     let val = lib.Value.new(value.coin());
 
-    // We take whatever min is higher from the old and new way to calcualte min ada
-    const min_ada = lib.min_ada_required(value, false, coinsPerUtxoWord);
-    // TODO: I beleive this line can be removed
-    // const min_ada_2 = minADARequired(value, false, coinsPerUtxoWord);
+    let min_ada = lib.BigNum.zero();
 
-    // const min_ada = min_ada_1.compare(min_ada_2) > 0 ? min_ada_1 : min_ada_2;
+    // Support both the old and new way of computing the cost!
+    // when vasil happens you can remove the old way!
+    if (dataCost) {
+      console.log("min_ada_for_output");
+      const fakeOutput = lib.TransactionOutput.new(
+        TestUtil.mkAddress(lib)(0),
+        value
+      );
+      min_ada = lib.min_ada_for_output(fakeOutput, dataCost);
+    } else {
+      console.log("min_ada_required");
+      min_ada = lib.min_ada_required(value, false, coinsPerUtxoWord);
+    }
 
     if (value.coin().compare(min_ada) < 0) {
       val = lib.Value.new(min_ada);
@@ -745,7 +735,7 @@ export const mkCommission =
 
 export const mkFeeConfig =
   (lib: typeof CardanoSerializationLib) =>
-  (networkParameters: NetworkParameters) => {
+  (networkParameters: NetworkParameters): FeeConfig => {
     return {
       linearFee: lib.LinearFee.new(
         lib.BigNum.from_str(networkParameters.linearFee.minFeeA),
@@ -756,7 +746,14 @@ export const mkFeeConfig =
       keyDeposit: lib.BigNum.from_str(networkParameters.keyDeposit),
       maxValSize: networkParameters.maxValSize,
       maxTxSize: networkParameters.maxTxSize,
+      // Decide the correct cost model depending on the which version of the network!
+      // Change to only use the new one when vasil hits mainnet
       coinsPerUtxoWord: lib.BigNum.from_str(networkParameters.coinsPerUtxoWord),
+      dataCost: networkParameters.coinsPerUtxoByte
+        ? lib.DataCost.new_coins_per_byte(
+            lib.BigNum.from_str(networkParameters.coinsPerUtxoByte)
+          )
+        : undefined,
     };
   };
 
@@ -769,6 +766,7 @@ export type NetworkParameters = {
   poolDeposit: string;
   keyDeposit: string;
   coinsPerUtxoWord: string;
+  coinsPerUtxoByte?: string;
   maxValSize: number;
   priceMem: number;
   priceStep: number;
@@ -784,6 +782,8 @@ async function initTx(netId: NetworkID): Promise<NetworkParameters> {
   }
   const p = await blockFrostAPI.epochsParameters(latest_block.epoch);
 
+  console.log(p);
+
   if (Types.isError(p)) {
     throw p;
   }
@@ -792,10 +792,11 @@ async function initTx(netId: NetworkID): Promise<NetworkParameters> {
       minFeeA: p.min_fee_a.toString(),
       minFeeB: p.min_fee_b.toString(),
     },
-    minUtxo: p.min_utxo, //p.min_utxo, minUTxOValue protocol paramter has been removed since Alonzo HF. Calulation of minADA works differently now, but 1 minADA still sufficient for now
+    minUtxo: p.min_utxo,
     poolDeposit: p.pool_deposit,
     keyDeposit: p.key_deposit,
     coinsPerUtxoWord: p.coins_per_utxo_word,
+    coinsPerUtxoByte: p.coins_per_utxo_size,
     maxValSize: parseInt(p.max_val_size),
     priceMem: p.price_mem,
     priceStep: p.price_step,
