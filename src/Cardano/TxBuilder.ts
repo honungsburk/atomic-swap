@@ -50,7 +50,6 @@ export async function createTTLBound(
 ): Promise<TTLBound.TTLBound> {
   const networkParameters = await initTx(networkID);
   const bound = TTLBound.initTTL();
-  console.log("slotnumber:", networkParameters.slot);
   bound.low = networkParameters.slot + 100;
   bound.high = networkParameters.slot + 88000; // About 24h before transaction is invalid
   return bound;

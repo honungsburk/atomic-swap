@@ -16,10 +16,10 @@
     "@chakra-ui/react": "^1.8.6",
     "@emotion/react": "^11.7.0",
     "@emotion/styled": "^11.6.0",
-    "@emurgo/cardano-serialization-lib-browser": "^10.0.4",
+    "@emurgo/cardano-serialization-lib-browser": "^11.0.0",
     "@emurgo/cip14-js": "^3.0.1",
     "buffer": "^6.0.3",
-    "cardano-web-bridge-wrapper": "^2.2.0",
+    "cardano-web-bridge-wrapper": "^3.3.0",
     "dexie": "3.2.0",
     "dexie-react-hooks": "1.0.7",
     "formik": "^2.2.9",
@@ -37,7 +37,7 @@
     "web-vitals": "^1.1.2"
   },
   "devDependencies": {
-    "@emurgo/cardano-serialization-lib-asmjs": "^10.0.4",
+    "@emurgo/cardano-serialization-lib-nodejs": "^11.0.0",
     "@types/node": "^12.20.41",
     "@types/react": "^17.0.33",
     "@types/react-dom": "^17.0.10",
