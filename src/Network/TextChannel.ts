@@ -1,4 +1,4 @@
-import Peer from "peerjs";
+import * as Peer from "peerjs";
 import IDGenerator from "../Util/Behavior/IDGenerator";
 import Observable from "../Util/Behavior/Observable";
 import Queue from "../Util/Behavior/Queue";
@@ -30,7 +30,7 @@ export function isMessage(x: any): x is Message {
 /**
  */
 export class TextChannel {
-  private peer: Peer;
+  private peer: Peer.Peer;
   private textConnection: Peer.DataConnection | null;
   private observable: Observable<Listener>;
   private queue: Queue<any>;
@@ -65,7 +65,7 @@ export class TextChannel {
       } /* Sample servers, please use appropriate ones */,
     };
 
-    this.peer = new Peer(peerOptions);
+    this.peer = new Peer.Peer(peerOptions);
 
     this.peer.on("open", (id: string | null) => {
       if (id !== null) {
@@ -121,11 +121,11 @@ export class TextChannel {
    * Defines callbacks to handle incoming data and connection events.
    */
   private setUpTextConnection(conn: Peer.DataConnection): void {
-    conn.on("error", (err) => {
+    conn.on("error", (err: any) => {
       this.updateOnErrorChange(err);
     });
 
-    conn.on("data", (data) => {
+    conn.on("data", (data: any) => {
       if (isTextMessage(data)) {
         this.addTheirMessage(data.text);
         this.updateOnMessage();
