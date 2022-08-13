@@ -1,7 +1,7 @@
 {
   "name": "atomic-swap",
   "private": true,
-  "version": "1.7.0",
+  "version": "1.7.1",
   "scripts": {
     "pretty": "prettier --write \"./src/**/*.{ts,tsx,json}\"",
     "lint": "eslint --ext .js,.ts ./src",
