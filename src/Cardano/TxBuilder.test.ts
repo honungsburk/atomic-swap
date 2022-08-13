@@ -280,8 +280,8 @@ test("outputSelection - Send Nothing", () => {
   const utxos = outputSelection(
     receiver,
     Cardano.Value.zero(),
-    fakeFeeConfig.coinsPerUtxoWord,
-    fakeFeeConfig.dataCost
+    fakeFeeConfig.coinsPerUtxoWord
+    // fakeFeeConfig.dataCost
   );
 
   expect(utxos.length).toBe(0);
@@ -295,8 +295,8 @@ test("outputSelection - Send 2 ADA", () => {
   const outputs = outputSelection(
     receiver,
     value,
-    fakeFeeConfig.coinsPerUtxoWord,
-    fakeFeeConfig.dataCost
+    fakeFeeConfig.coinsPerUtxoWord
+    // fakeFeeConfig.dataCost
   );
 
   expect(ValueExtra.eq(value, sumOutputs(outputs))).toBeTruthy();
@@ -309,8 +309,8 @@ test("outputSelection - Send 0.5 ADA", () => {
   const outputs = outputSelection(
     receiver,
     value,
-    fakeFeeConfig.coinsPerUtxoWord,
-    fakeFeeConfig.dataCost
+    fakeFeeConfig.coinsPerUtxoWord
+    // fakeFeeConfig.dataCost
   );
   const outputVal = sumOutputs(outputs);
 
@@ -337,8 +337,8 @@ test("outputSelection - Send 2 ADA + one asset", () => {
   const outputs = outputSelection(
     receiver,
     value,
-    fakeFeeConfig.coinsPerUtxoWord,
-    fakeFeeConfig.dataCost
+    fakeFeeConfig.coinsPerUtxoWord
+    // fakeFeeConfig.dataCost
   );
   const outputVal = sumOutputs(outputs);
 
@@ -364,8 +364,8 @@ test("outputSelection - Send 0 ADA + 1 asset", () => {
   const outputs = outputSelection(
     fakeTheirAddress,
     value,
-    fakeFeeConfig.coinsPerUtxoWord,
-    fakeFeeConfig.dataCost
+    fakeFeeConfig.coinsPerUtxoWord
+    // fakeFeeConfig.dataCost
   );
 
   const total = sumOutputs(outputs);
@@ -375,13 +375,18 @@ test("outputSelection - Send 0 ADA + 1 asset", () => {
     amount.to_str()
   );
 
+  const minADA = Cardano.min_ada_required(
+    total,
+    false,
+    fakeFeeConfig.coinsPerUtxoWord
+  );
   // Check that extra amount is respected
-  const minADA = fakeFeeConfig.dataCost
-    ? Cardano.min_ada_for_output(
-        Cardano.TransactionOutput.new(TestUtil.mkAddress(Cardano)(0), total),
-        fakeFeeConfig.dataCost
-      )
-    : Cardano.min_ada_required(total, false, fakeFeeConfig.coinsPerUtxoWord);
+  // const minADA = fakeFeeConfig.dataCost
+  //   ? Cardano.min_ada_for_output(
+  //       Cardano.TransactionOutput.new(TestUtil.mkAddress(Cardano)(0), total),
+  //       fakeFeeConfig.dataCost
+  //     )
+  //   : Cardano.min_ada_required(total, false, fakeFeeConfig.coinsPerUtxoWord);
 
   expect(minADA.compare(total.coin())).toBeLessThanOrEqual(0);
 });

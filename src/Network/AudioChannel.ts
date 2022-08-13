@@ -1,4 +1,4 @@
-import Peer from "peerjs";
+import * as Peer from "peerjs";
 import Observable from "../Util/Behavior/Observable";
 import { ChannelState } from "./Channel";
 
@@ -67,7 +67,7 @@ export function isCalling(x: any): x is Calling {
 /**
  */
 export class AudioChannel {
-  private peer: Peer;
+  private peer: Peer.Peer;
   private inputAudioStream: MediaStream | undefined;
   private outputAudioStream: MediaStream | undefined;
   private audioCtx: AudioContext;
@@ -77,7 +77,7 @@ export class AudioChannel {
   private state: ChannelState;
 
   private callState: CallState;
-  private checkCallState: number | null;
+  private checkCallState: NodeJS.Timeout | null;
 
   private id: string | null;
 
@@ -117,7 +117,7 @@ export class AudioChannel {
       } /* Sample servers, please use appropriate ones */,
     };
 
-    this.peer = new Peer(peerOptions);
+    this.peer = new Peer.Peer(peerOptions);
 
     this.peer.on("open", (id: string | null) => {
       if (id !== null) {
@@ -256,7 +256,7 @@ export class AudioChannel {
     // There is no event for when there is an audio connection so we have to
     // pull it ourselves.
     this.checkIfInCall();
-    audioConnection.on("stream", (stream) => {
+    audioConnection.on("stream", (stream: any) => {
       this.clearCheckIfInCall();
       this.outputAudioStream = stream;
       this.updateOnCallState(

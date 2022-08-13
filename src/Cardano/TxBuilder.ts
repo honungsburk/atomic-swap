@@ -10,7 +10,7 @@ import type {
   Transaction,
   TransactionWitnessSet,
   AssetName,
-  DataCost,
+  // DataCost,
 } from "@emurgo/cardano-serialization-lib-browser";
 import { BasicWallet } from "cardano-web-bridge-wrapper/lib/BasicWallet";
 import { NetworkID } from "cardano-web-bridge-wrapper/lib/Wallet";
@@ -23,7 +23,7 @@ import * as TTLBound from "../Network/TTLBound";
 import * as CardanoSerializationLib from "@emurgo/cardano-serialization-lib-browser";
 import * as Extra from "../Util/Extra";
 import * as Util from "src/Util";
-import * as TestUtil from "./TestUtil";
+// import * as TestUtil from "./TestUtil";
 
 export type OfferParams = {
   address: Address;
@@ -39,7 +39,7 @@ export type FeeConfig = {
   maxValSize: number;
   maxTxSize: number;
   coinsPerUtxoWord: BigNum; // Legacy parameter
-  dataCost?: DataCost;
+  // dataCost?: DataCost;
 };
 
 export type Commission = {
@@ -168,17 +168,21 @@ const mkBuilder =
       .max_value_size(feeConfig.maxValSize)
       .pool_deposit(feeConfig.poolDepsit);
 
-    if (feeConfig.dataCost) {
-      console.log("dataCost");
-      configBuilder = configBuilder.coins_per_utxo_byte(
-        feeConfig.dataCost.coins_per_byte()
-      );
-    } else {
-      console.log("coins_per_utxo_word");
-      configBuilder = configBuilder.coins_per_utxo_word(
-        feeConfig.coinsPerUtxoWord
-      );
-    }
+    configBuilder = configBuilder.coins_per_utxo_word(
+      feeConfig.coinsPerUtxoWord
+    );
+
+    // if (feeConfig.dataCost) {
+    //   console.log("dataCost");
+    //   configBuilder = configBuilder.coins_per_utxo_byte(
+    //     feeConfig.dataCost.coins_per_byte()
+    //   );
+    // } else {
+    //   console.log("coins_per_utxo_word");
+    //   configBuilder = configBuilder.coins_per_utxo_word(
+    //     feeConfig.coinsPerUtxoWord
+    //   );
+    // }
 
     const txBuilder = lib.TransactionBuilder.new(configBuilder.build());
 
@@ -262,8 +266,8 @@ export const constructTxBuilder =
     const whatIRecieve = outputSelection(lib)(
       myOffer.address,
       theirOffer.value,
-      feeConfig.coinsPerUtxoWord,
-      feeConfig.dataCost
+      feeConfig.coinsPerUtxoWord
+      // feeConfig.dataCost
     );
     const extraINeedToAdd = sumOutputs(lib)(whatIRecieve).checked_sub(
       theirOffer.value
@@ -276,8 +280,8 @@ export const constructTxBuilder =
     const whatTheyRecieve = outputSelection(lib)(
       theirOffer.address,
       myOffer.value,
-      feeConfig.coinsPerUtxoWord,
-      feeConfig.dataCost
+      feeConfig.coinsPerUtxoWord
+      // feeConfig.dataCost
     );
     const extraTheyNeedToAdd = sumOutputs(lib)(whatTheyRecieve).checked_sub(
       myOffer.value
@@ -369,14 +373,14 @@ export const constructTxBuilder =
       const myUtxosBack: TransactionOutput[] = outputSelection(lib)(
         myOffer.address,
         myChangeEstimate,
-        feeConfig.coinsPerUtxoWord,
-        feeConfig.dataCost
+        feeConfig.coinsPerUtxoWord
+        // feeConfig.dataCost
       );
       const theirUtxosBack: TransactionOutput[] = outputSelection(lib)(
         theirOffer.address,
         theirChangeEstimate,
-        feeConfig.coinsPerUtxoWord,
-        feeConfig.dataCost
+        feeConfig.coinsPerUtxoWord
+        // feeConfig.dataCost
       );
 
       //Since we need to cover the min UTxO amount we might overflow
@@ -669,8 +673,8 @@ export const outputSelection =
   (
     reciever: Address,
     value: Value,
-    coinsPerUtxoWord: BigNum,
-    dataCost?: DataCost
+    coinsPerUtxoWord: BigNum
+    // dataCost?: DataCost
   ) => {
     const outputs: TransactionOutput[] = [];
 
@@ -681,20 +685,20 @@ export const outputSelection =
     let val = lib.Value.new(value.coin());
 
     let min_ada = lib.BigNum.zero();
-
+    min_ada = lib.min_ada_required(value, false, coinsPerUtxoWord);
     // Support both the old and new way of computing the cost!
     // when vasil happens you can remove the old way!
-    if (dataCost) {
-      console.log("min_ada_for_output");
-      const fakeOutput = lib.TransactionOutput.new(
-        TestUtil.mkAddress(lib)(0),
-        value
-      );
-      min_ada = lib.min_ada_for_output(fakeOutput, dataCost);
-    } else {
-      console.log("min_ada_required");
-      min_ada = lib.min_ada_required(value, false, coinsPerUtxoWord);
-    }
+    // if (dataCost) {
+    //   console.log("min_ada_for_output");
+    //   const fakeOutput = lib.TransactionOutput.new(
+    //     TestUtil.mkAddress(lib)(0),
+    //     value
+    //   );
+    //   min_ada = lib.min_ada_for_output(fakeOutput, dataCost);
+    // } else {
+    //   console.log("min_ada_required");
+    //   min_ada = lib.min_ada_required(value, false, coinsPerUtxoWord);
+    // }
 
     if (value.coin().compare(min_ada) < 0) {
       val = lib.Value.new(min_ada);
@@ -749,11 +753,11 @@ export const mkFeeConfig =
       // Decide the correct cost model depending on the which version of the network!
       // Change to only use the new one when vasil hits mainnet
       coinsPerUtxoWord: lib.BigNum.from_str(networkParameters.coinsPerUtxoWord),
-      dataCost: networkParameters.coinsPerUtxoByte
-        ? lib.DataCost.new_coins_per_byte(
-            lib.BigNum.from_str(networkParameters.coinsPerUtxoByte)
-          )
-        : undefined,
+      // dataCost: networkParameters.coinsPerUtxoByte
+      //   ? lib.DataCost.new_coins_per_byte(
+      //       lib.BigNum.from_str(networkParameters.coinsPerUtxoByte)
+      //     )
+      //   : undefined,
     };
   };
 

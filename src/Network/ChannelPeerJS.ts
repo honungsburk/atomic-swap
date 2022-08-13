@@ -1,4 +1,4 @@
-import Peer from "peerjs";
+import * as Peer from "peerjs";
 import Observable from "../Util/Behavior/Observable";
 import Queue from "../Util/Behavior/Queue";
 import { Channel, ChannelState } from "./Channel";
@@ -34,7 +34,7 @@ export class DisconnectedError extends Error {
  * A two way comuncation channel between two web browsers
  */
 export class ChannelPeerJS<T> implements Channel<T> {
-  private peer: Peer;
+  private peer: Peer.Peer;
   private lastPeerId: string | null;
   private state: ChannelState;
   private conn: Peer.DataConnection | null;
@@ -60,7 +60,7 @@ export class ChannelPeerJS<T> implements Channel<T> {
       } /* Sample servers, please use appropriate ones */,
     };
 
-    this.peer = new Peer(peerOptions);
+    this.peer = new Peer.Peer(peerOptions);
 
     this.lastPeerId = null;
     this.state = "Initalized";
@@ -74,7 +74,7 @@ export class ChannelPeerJS<T> implements Channel<T> {
     channel.peer.on("open", function () {
       // Workaround for peer.reconnect deleting previous id
       if (channel.peer.id === null && channel.lastPeerId) {
-        channel.peer.id = channel.lastPeerId;
+        // channel.peer.id = channel.lastPeerId;
       } else {
         channel.lastPeerId = channel.peer.id;
       }
@@ -138,7 +138,7 @@ export class ChannelPeerJS<T> implements Channel<T> {
   private ready(conn: Peer.DataConnection): void {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const channel = this;
-    conn.on("data", (data) => {
+    conn.on("data", (data: any) => {
       this.observable.forEachObserver((listener) => {
         if (listener.kind === "Receive") {
           listener.fn(data);
