@@ -21,6 +21,12 @@ export default function ChangeLog() {
           Changelog
         </Heading>
         <VStack spacing={3} width={"fill"} align="left">
+          <Entry title="Vasil Hardwork" version="2.0.0" date="2022-08-14">
+            <Add>Add support for Vasil</Add>
+          </Entry>
+          <Entry title="Security Update" version="1.7.1" date="2022-08-12">
+            <Update>Guard against spoofed UTxOs</Update>
+          </Entry>
           <Entry title="Fully Open Source" version="1.7.0" date="2022-04-28">
             <Add>Open Source the project</Add>
             <Add>Add link to the Github repository</Add>
