@@ -9,6 +9,7 @@ import {
 import * as TestUtil from "./TestUtil";
 import * as ValueExtra from "./ValueExtra";
 import * as Cardano from "@emurgo/cardano-serialization-lib-nodejs";
+import * as CardanoOld from "cardano-serialization-lib-nodejs-old";
 
 const mkScriptHash = TestUtil.mkScriptHash(Cardano);
 const mkAssetName = TestUtil.mkAssetName(Cardano);
@@ -242,7 +243,7 @@ test("outputSelection - Not Enough Assets", () => {
 // Test Parameters
 ////////////////////////////////////////////////////////////////////////////////
 
-const fakeNetworkParameters: TxBuilder.NetworkParameters = {
+const fakeNetworkParametersPreVasil: TxBuilder.NetworkParameters = {
   linearFee: {
     minFeeA: "44",
     minFeeB: "155381",
@@ -258,7 +259,29 @@ const fakeNetworkParameters: TxBuilder.NetworkParameters = {
   slot: 300,
 };
 
-const fakeFeeConfig = TxBuilder.mkFeeConfig(Cardano)(fakeNetworkParameters);
+const fakeNetworkParametersPostVasil: TxBuilder.NetworkParameters = {
+  linearFee: {
+    minFeeA: "44",
+    minFeeB: "155381",
+  },
+  minUtxo: "1000000",
+  poolDeposit: "500000000",
+  keyDeposit: "2000000",
+  coinsPerUtxoWord: "4310",
+  coinsPerUtxoByte: "4310",
+  maxValSize: 5000,
+  priceMem: 5.77e-2,
+  priceStep: 7.21e-5,
+  maxTxSize: 4000,
+  slot: 300,
+};
+
+const fakeFeeConfigPreVasil = TxBuilder.mkFeeConfig(Cardano)(
+  fakeNetworkParametersPreVasil
+);
+const fakeFeeConfigPostVasil = TxBuilder.mkFeeConfig(Cardano)(
+  fakeNetworkParametersPostVasil
+);
 const fakeMyAddress = Address.from_bech32(
   "addr1q9sqs2fh4xdl9hfkknxp2k304kwrj86z3228lr8m6c2g2ne82szk0twjcev7qlssvmffaket0fx4sf5jlhl8qcwm30hqpvfej5"
 );
@@ -270,7 +293,7 @@ const fakeTheirAddress = Address.from_bech32(
 // TxBuilder.constructTxBuilder
 ////////////////////////////////////////////////////////////////////////////////
 
-const outputSelection = TxBuilder.outputSelection(Cardano);
+const outputSelection = TxBuilder.outputSelection(Cardano, CardanoOld);
 const sumOutputs = TxBuilder.sumOutputs(Cardano);
 const sumUtxos = TxBuilder.sumUtxos(Cardano);
 
@@ -280,8 +303,8 @@ test("outputSelection - Send Nothing", () => {
   const utxos = outputSelection(
     receiver,
     Cardano.Value.zero(),
-    fakeFeeConfig.coinsPerUtxoWord
-    // fakeFeeConfig.dataCost
+    fakeFeeConfigPreVasil.coinsPerUtxoWord,
+    fakeFeeConfigPreVasil.dataCost
   );
 
   expect(utxos.length).toBe(0);
@@ -295,8 +318,8 @@ test("outputSelection - Send 2 ADA", () => {
   const outputs = outputSelection(
     receiver,
     value,
-    fakeFeeConfig.coinsPerUtxoWord
-    // fakeFeeConfig.dataCost
+    fakeFeeConfigPreVasil.coinsPerUtxoWord,
+    fakeFeeConfigPreVasil.dataCost
   );
 
   expect(ValueExtra.eq(value, sumOutputs(outputs))).toBeTruthy();
@@ -309,8 +332,8 @@ test("outputSelection - Send 0.5 ADA", () => {
   const outputs = outputSelection(
     receiver,
     value,
-    fakeFeeConfig.coinsPerUtxoWord
-    // fakeFeeConfig.dataCost
+    fakeFeeConfigPreVasil.coinsPerUtxoWord,
+    fakeFeeConfigPreVasil.dataCost
   );
   const outputVal = sumOutputs(outputs);
 
@@ -337,8 +360,8 @@ test("outputSelection - Send 2 ADA + one asset", () => {
   const outputs = outputSelection(
     receiver,
     value,
-    fakeFeeConfig.coinsPerUtxoWord
-    // fakeFeeConfig.dataCost
+    fakeFeeConfigPreVasil.coinsPerUtxoWord,
+    fakeFeeConfigPreVasil.dataCost
   );
   const outputVal = sumOutputs(outputs);
 
@@ -349,7 +372,7 @@ test("outputSelection - Send 2 ADA + one asset", () => {
   );
 });
 
-test("outputSelection - Send 0 ADA + 1 asset", () => {
+test("outputSelection - Send 0 ADA + 1 asset - Pre Vasil", () => {
   const hash = mkScriptHash(1);
   const assetName = mkAssetName("a");
   const ada = BigNum.from_str("0");
@@ -364,8 +387,8 @@ test("outputSelection - Send 0 ADA + 1 asset", () => {
   const outputs = outputSelection(
     fakeTheirAddress,
     value,
-    fakeFeeConfig.coinsPerUtxoWord
-    // fakeFeeConfig.dataCost
+    fakeFeeConfigPreVasil.coinsPerUtxoWord,
+    fakeFeeConfigPreVasil.dataCost
   );
 
   const total = sumOutputs(outputs);
@@ -374,21 +397,51 @@ test("outputSelection - Send 0 ADA + 1 asset", () => {
   expect(total.multiasset()?.get(hash)?.get(assetName)?.to_str()).toBe(
     amount.to_str()
   );
-
-  const minADA = Cardano.min_ada_required(
-    total,
-    false,
-    fakeFeeConfig.coinsPerUtxoWord
+  const valueOld = CardanoOld.Value.from_bytes(value.to_bytes());
+  const coinsPerUtxoWordOld = CardanoOld.BigNum.from_bytes(
+    fakeFeeConfigPreVasil.coinsPerUtxoWord.to_bytes()
   );
-  // Check that extra amount is respected
-  // const minADA = fakeFeeConfig.dataCost
-  //   ? Cardano.min_ada_for_output(
-  //       Cardano.TransactionOutput.new(TestUtil.mkAddress(Cardano)(0), total),
-  //       fakeFeeConfig.dataCost
-  //     )
-  //   : Cardano.min_ada_required(total, false, fakeFeeConfig.coinsPerUtxoWord);
+  const min_ada_old = CardanoOld.min_ada_required(
+    valueOld,
+    false,
+    coinsPerUtxoWordOld
+  );
+  const min_ada = Cardano.BigNum.from_bytes(min_ada_old.to_bytes());
 
-  expect(minADA.compare(total.coin())).toBeLessThanOrEqual(0);
+  expect(min_ada.compare(total.coin()) === 0).true;
+});
+
+test("outputSelection - Send 0 ADA + 1 asset - Post Vasil", () => {
+  const hash = mkScriptHash(1);
+  const assetName = mkAssetName("a");
+  const ada = BigNum.from_str("0");
+  const amount = BigNum.from_str("10");
+
+  const value = mkValue(ada, [
+    {
+      hash: hash,
+      assets: [{ amount: amount, assetName: assetName }],
+    },
+  ]);
+  const outputs = outputSelection(
+    fakeTheirAddress,
+    value,
+    fakeFeeConfigPostVasil.coinsPerUtxoWord,
+    fakeFeeConfigPostVasil.dataCost
+  );
+
+  const total = sumOutputs(outputs);
+
+  // Check native asset
+  expect(total.multiasset()?.get(hash)?.get(assetName)?.to_str()).toBe(
+    amount.to_str()
+  );
+  const min_ada = Cardano.min_ada_for_output(
+    outputs[0],
+    fakeFeeConfigPostVasil.dataCost!
+  );
+
+  expect(min_ada.compare(total.coin()) === 0).true;
 });
 
 test("inputSelection - Simple send of 8 ada", () => {
@@ -407,7 +460,7 @@ test("inputSelection - Simple send of 8 ada", () => {
 // TxBuilder.constructTxBuilder
 ////////////////////////////////////////////////////////////////////////////////
 
-const constructTxBuilder = TxBuilder.constructTxBuilder(Cardano);
+const constructTxBuilder = TxBuilder.constructTxBuilder(Cardano, CardanoOld);
 const mkCommission = TxBuilder.mkCommission(Cardano);
 
 test("TxBuilder.constructTxBuilder - No Commission - Simple send of ada", () => {
@@ -432,11 +485,11 @@ test("TxBuilder.constructTxBuilder - No Commission - Simple send of ada", () => 
   };
 
   const txBuilder = constructTxBuilder(
-    fakeFeeConfig,
+    fakeFeeConfigPreVasil,
     undefined,
     myOffer,
     theirOffer,
-    fakeNetworkParameters.slot
+    fakeNetworkParametersPreVasil.slot
   );
 
   const input = txBuilder
@@ -506,11 +559,11 @@ test("TxBuilder.constructTxBuilder - No Commission - Simple send of asset", () =
   };
 
   const txBuilder = constructTxBuilder(
-    fakeFeeConfig,
+    fakeFeeConfigPreVasil,
     undefined,
     myOffer,
     theirOffer,
-    fakeNetworkParameters.slot
+    fakeNetworkParametersPreVasil.slot
   );
 
   expect(txBuilderInBalance(txBuilder)).toBeTruthy();
@@ -572,11 +625,11 @@ test("TxBuilder.constructTxBuilder - need two utxos", () => {
   };
 
   const txBuilder = constructTxBuilder(
-    fakeFeeConfig,
+    fakeFeeConfigPreVasil,
     undefined,
     myOffer,
     theirOffer,
-    fakeNetworkParameters.slot
+    fakeNetworkParametersPreVasil.slot
   );
 
   expect(txBuilderInBalance(txBuilder)).toBeTruthy();
@@ -602,11 +655,11 @@ test("TxBuilder.constructTxBuilder - ADA against ADA - one utxo each - with comm
   };
 
   const txBuilder = constructTxBuilder(
-    fakeFeeConfig,
+    fakeFeeConfigPreVasil,
     mkCommission("Mainnet"),
     myOffer,
     theirOffer,
-    fakeNetworkParameters.slot
+    fakeNetworkParametersPreVasil.slot
   );
 
   expect(txBuilderInBalance(txBuilder)).toBeTruthy();
@@ -635,11 +688,11 @@ test("TxBuilder.constructTxBuilder - ADA against ADA - 2- utxos each with commis
   };
 
   const txBuilder = constructTxBuilder(
-    fakeFeeConfig,
+    fakeFeeConfigPreVasil,
     mkCommission("Mainnet"),
     myOffer,
     theirOffer,
-    fakeNetworkParameters.slot
+    fakeNetworkParametersPreVasil.slot
   );
 
   expect(txBuilderInBalance(txBuilder)).toBeTruthy();
@@ -668,11 +721,11 @@ test("TxBuilder.constructTxBuilder - I don not have enough ADA to send", () => {
   let err: TxBuilder.InsufficientAdaError | undefined = undefined;
   try {
     constructTxBuilder(
-      fakeFeeConfig,
+      fakeFeeConfigPreVasil,
       undefined,
       myOffer,
       theirOffer,
-      fakeNetworkParameters.slot
+      fakeNetworkParametersPreVasil.slot
     );
   } catch (coughtErr) {
     if (coughtErr instanceof TxBuilder.InsufficientAdaError) {
@@ -707,11 +760,11 @@ test("TxBuilder.constructTxBuilder - They do not have enough ADA to send", () =>
   let err: TxBuilder.InsufficientAdaError | undefined = undefined;
   try {
     constructTxBuilder(
-      fakeFeeConfig,
+      fakeFeeConfigPreVasil,
       undefined,
       myOffer,
       theirOffer,
-      fakeNetworkParameters.slot
+      fakeNetworkParametersPreVasil.slot
     );
   } catch (coughtErr) {
     if (coughtErr instanceof TxBuilder.InsufficientAdaError) {
@@ -746,11 +799,11 @@ test("TxBuilder.constructTxBuilder - I do not have enough ADA to cover commissio
   let err: TxBuilder.InsufficientAdaError | undefined = undefined;
   try {
     constructTxBuilder(
-      fakeFeeConfig,
+      fakeFeeConfigPreVasil,
       mkCommission("Mainnet"),
       myOffer,
       theirOffer,
-      fakeNetworkParameters.slot
+      fakeNetworkParametersPreVasil.slot
     );
   } catch (coughtErr) {
     if (coughtErr instanceof TxBuilder.InsufficientAdaError) {
@@ -785,11 +838,11 @@ test("TxBuilder.constructTxBuilder - They do not have enough ADA to cover commis
   let err: TxBuilder.InsufficientAdaError | undefined = undefined;
   try {
     constructTxBuilder(
-      fakeFeeConfig,
+      fakeFeeConfigPreVasil,
       mkCommission("Mainnet"),
       myOffer,
       theirOffer,
-      fakeNetworkParameters.slot
+      fakeNetworkParametersPreVasil.slot
     );
   } catch (coughtErr) {
     if (coughtErr instanceof TxBuilder.InsufficientAdaError) {
@@ -840,11 +893,11 @@ test("TxBuilder.constructTxBuilder - I can not cover native asset", () => {
   let err: TxBuilder.InsufficientNativeAssetError | undefined = undefined;
   try {
     constructTxBuilder(
-      fakeFeeConfig,
+      fakeFeeConfigPreVasil,
       mkCommission("Mainnet"),
       myOffer,
       theirOffer,
-      fakeNetworkParameters.slot
+      fakeNetworkParametersPreVasil.slot
     );
   } catch (coughtErr) {
     if (coughtErr instanceof TxBuilder.InsufficientNativeAssetError) {
@@ -899,11 +952,11 @@ test("TxBuilder.constructTxBuilder - They can not cover native asset", () => {
   let err: TxBuilder.InsufficientNativeAssetError | undefined = undefined;
   try {
     constructTxBuilder(
-      fakeFeeConfig,
+      fakeFeeConfigPreVasil,
       mkCommission("Mainnet"),
       myOffer,
       theirOffer,
-      fakeNetworkParameters.slot
+      fakeNetworkParametersPreVasil.slot
     );
   } catch (coughtErr) {
     if (coughtErr instanceof TxBuilder.InsufficientNativeAssetError) {

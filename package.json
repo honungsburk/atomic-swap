@@ -1,7 +1,7 @@
 {
   "name": "atomic-swap",
   "private": true,
-  "version": "1.7.1",
+  "version": "1.7.2",
   "scripts": {
     "pretty": "prettier --write \"./src/**/*.{ts,tsx,json}\"",
     "lint": "eslint --ext .js,.ts ./src",
@@ -16,7 +16,8 @@
     "@chakra-ui/react": "^1.8.6",
     "@emotion/react": "^11.7.0",
     "@emotion/styled": "^11.6.0",
-    "@emurgo/cardano-serialization-lib-browser": "^10.2.0",
+    "@emurgo/cardano-serialization-lib-browser": "^11.0.0",
+    "cardano-serialization-lib-browser-old": "npm:@emurgo/cardano-serialization-lib-browser@^10.2.0",
     "@emurgo/cip14-js": "^3.0.1",
     "buffer": "^6.0.3",
     "cardano-web-bridge-wrapper": "^3.3.0",
@@ -38,7 +39,8 @@
   },
   "devDependencies": {
     "@types/node": "^18.7.2",
-    "@emurgo/cardano-serialization-lib-nodejs": "^10.2.0",
+    "cardano-serialization-lib-nodejs-old": "npm:@emurgo/cardano-serialization-lib-nodejs@^10.2.0",
+    "@emurgo/cardano-serialization-lib-nodejs": "^11.0.0",
     "@types/react": "^17.0.33",
     "@types/react-dom": "^17.0.10",
     "@types/react-kawaii": "^0.17.0",

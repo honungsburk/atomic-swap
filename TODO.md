@@ -3,7 +3,14 @@
 A simple list of features and improvements that could be added to Atomic Swap.
 You can think of this as the step before I create a task.
 
-- Need to update to support latest Cardano after fork...
+## Work Items
+
+- useContext
+- Both should send completed transaction...
+- Add tests to check output UTxO size... both old and new lib
+
+## Backlog
+
 - Support for Ergo
 - Show the image of NFTs
 - Make sure the app can operate even if blockfrost is down
@@ -16,7 +23,3 @@ You can think of this as the step before I create a task.
 - Create a bunch of proper issues from this TODO...
 - Refactor and use Text & Layer Styles (Chakra UI)
 - Refactor to use Semantic Tokens (Chakra UI)
-- Upgrade to React 18
-- npm audit
-- Move to Github
-- Fix issue with "PrintColorAdjust"
