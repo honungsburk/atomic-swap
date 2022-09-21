@@ -73,7 +73,7 @@ const buildTxBody =
     const networkID = await walletConnector.getNetworkId();
     const commission = mkCommission(lib)(networkID);
     const networkParameters = await initTx(networkID);
-    const feeConfig = mkFeeConfig(lib)(networkParameters);
+    const feeConfig = mkFeeConfig(lib)(networkID, networkParameters);
     const txBuilder = constructTxBuilder(lib, lib2)(
       feeConfig,
       commission,
@@ -757,7 +757,7 @@ export const mkCommission =
 
 export const mkFeeConfig =
   (lib: typeof CardanoSerializationLib) =>
-  (networkParameters: NetworkParameters): FeeConfig => {
+  (networkID: NetworkID, networkParameters: NetworkParameters): FeeConfig => {
     return {
       linearFee: lib.LinearFee.new(
         lib.BigNum.from_str(networkParameters.linearFee.minFeeA),
@@ -771,11 +771,14 @@ export const mkFeeConfig =
       // Decide the correct cost model depending on the which version of the network!
       // Change to only use the new one when vasil hits mainnet
       coinsPerUtxoWord: lib.BigNum.from_str(networkParameters.coinsPerUtxoWord),
-      dataCost: networkParameters.coinsPerUtxoByte
-        ? lib.DataCost.new_coins_per_byte(
-            lib.BigNum.from_str(networkParameters.coinsPerUtxoByte)
-          )
-        : undefined,
+      dataCost:
+        networkID === "Mainnet"
+          ? lib.DataCost.new_coins_per_word(
+              lib.BigNum.from_str(networkParameters.coinsPerUtxoWord)
+            )
+          : lib.DataCost.new_coins_per_byte(
+              lib.BigNum.from_str(networkParameters.coinsPerUtxoByte)
+            ),
     };
   };
 
@@ -788,7 +791,7 @@ export type NetworkParameters = {
   poolDeposit: string;
   keyDeposit: string;
   coinsPerUtxoWord: string;
-  coinsPerUtxoByte?: string;
+  coinsPerUtxoByte: string;
   maxValSize: number;
   priceMem: number;
   priceStep: number;
@@ -815,7 +818,7 @@ async function initTx(netId: NetworkID): Promise<NetworkParameters> {
     minUtxo: p.min_utxo,
     poolDeposit: p.pool_deposit,
     keyDeposit: p.key_deposit,
-    coinsPerUtxoWord: p.coins_per_utxo_size ? "34482" : p.coins_per_utxo_word, // Set to the old value if new value exists
+    coinsPerUtxoWord: p.coins_per_utxo_word, // Set to the old value if new value exists
     coinsPerUtxoByte: p.coins_per_utxo_size,
     maxValSize: parseInt(p.max_val_size),
     priceMem: p.price_mem,

@@ -17,7 +17,10 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       proxy: {
-        "/api": "http://localhost:5000/",
+        "/api": {
+          target:
+            "http://localhost:5001/atomic-swap-124d0/us-central1/main/api/",
+        },
       },
     },
     plugins: [

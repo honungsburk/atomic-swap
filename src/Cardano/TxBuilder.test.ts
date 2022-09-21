@@ -252,6 +252,7 @@ const fakeNetworkParametersPreVasil: TxBuilder.NetworkParameters = {
   poolDeposit: "500000000",
   keyDeposit: "2000000",
   coinsPerUtxoWord: "34482",
+  coinsPerUtxoByte: "34482",
   maxValSize: 5000,
   priceMem: 5.77e-2,
   priceStep: 7.21e-5,
@@ -277,9 +278,11 @@ const fakeNetworkParametersPostVasil: TxBuilder.NetworkParameters = {
 };
 
 const fakeFeeConfigPreVasil = TxBuilder.mkFeeConfig(Cardano)(
+  "Mainnet",
   fakeNetworkParametersPreVasil
 );
 const fakeFeeConfigPostVasil = TxBuilder.mkFeeConfig(Cardano)(
+  "Testnet",
   fakeNetworkParametersPostVasil
 );
 const fakeMyAddress = Address.from_bech32(
