@@ -5,7 +5,11 @@ You can think of this as the step before I create a task.
 
 ## Work Items
 
+- enable libcheck in tsconfig (cardano-seralization lib has build error)
 - useContext
+- zustand vs redux
+- rewrite sync algorithm
+- rewrite transaction construction algorithm
 - Both should send completed transaction...
 - Add tests to check output UTxO size... both old and new lib
 - rebuild the transaction building code
