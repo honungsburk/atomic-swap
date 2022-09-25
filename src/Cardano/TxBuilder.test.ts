@@ -242,24 +242,7 @@ test("outputSelection - Not Enough Assets", () => {
 // Test Parameters
 ////////////////////////////////////////////////////////////////////////////////
 
-const fakeNetworkParametersPreVasil: TxBuilder.NetworkParameters = {
-  linearFee: {
-    minFeeA: "44",
-    minFeeB: "155381",
-  },
-  minUtxo: "1000000",
-  poolDeposit: "500000000",
-  keyDeposit: "2000000",
-  coinsPerUtxoWord: "34482",
-  coinsPerUtxoByte: "34482",
-  maxValSize: 5000,
-  priceMem: 5.77e-2,
-  priceStep: 7.21e-5,
-  maxTxSize: 4000,
-  slot: 300,
-};
-
-const fakeNetworkParametersPostVasil: TxBuilder.NetworkParameters = {
+const fakeNetworkParameters: TxBuilder.NetworkParameters = {
   linearFee: {
     minFeeA: "44",
     minFeeB: "155381",
@@ -278,12 +261,9 @@ const fakeNetworkParametersPostVasil: TxBuilder.NetworkParameters = {
 
 const fakeFeeConfig = TxBuilder.mkFeeConfig(Cardano)(
   "Mainnet",
-  fakeNetworkParametersPreVasil
+  fakeNetworkParameters
 );
-const fakeFeeConfigPostVasil = TxBuilder.mkFeeConfig(Cardano)(
-  "Testnet",
-  fakeNetworkParametersPostVasil
-);
+
 const fakeMyAddress = Address.from_bech32(
   "addr1q9sqs2fh4xdl9hfkknxp2k304kwrj86z3228lr8m6c2g2ne82szk0twjcev7qlssvmffaket0fx4sf5jlhl8qcwm30hqpvfej5"
 );
@@ -312,7 +292,7 @@ test("outputSelection - Send Nothing", () => {
   expect(ValueExtra.eq(Cardano.Value.zero(), sumOutputs(utxos))).toBeTruthy();
 });
 
-test.only("outputSelection - Send 2 ADA", () => {
+test("outputSelection - Send 2 ADA", () => {
   const receiver = fakeMyAddress;
   const value = Value.new(BigNum.from_str("2000000"));
 
@@ -359,7 +339,7 @@ test("outputSelection - Send 2 ADA + one asset", () => {
   );
 });
 
-test("outputSelection - Send 0 ADA + 1 asset - Post Vasil", () => {
+test("outputSelection - Send 0 ADA + 1 asset", () => {
   const hash = mkScriptHash(1);
   const assetName = mkAssetName("a");
   const ada = BigNum.from_str("0");
@@ -374,7 +354,7 @@ test("outputSelection - Send 0 ADA + 1 asset - Post Vasil", () => {
   const outputs = outputSelection(
     fakeTheirAddress,
     value,
-    fakeFeeConfigPostVasil.dataCost
+    fakeFeeConfig.dataCost
   );
 
   const total = sumOutputs(outputs);
@@ -385,7 +365,7 @@ test("outputSelection - Send 0 ADA + 1 asset - Post Vasil", () => {
   );
   const min_ada = Cardano.min_ada_for_output(
     outputs[0],
-    fakeFeeConfigPostVasil.dataCost
+    fakeFeeConfig.dataCost
   );
 
   expect(min_ada.compare(total.coin()) === 0).true;
@@ -436,7 +416,7 @@ test("TxBuilder.constructTxBuilder - No Commission - Simple send of ada", () => 
     undefined,
     myOffer,
     theirOffer,
-    fakeNetworkParametersPreVasil.slot
+    fakeNetworkParameters.slot
   );
 
   const input = txBuilder
@@ -510,7 +490,7 @@ test("TxBuilder.constructTxBuilder - No Commission - Simple send of asset", () =
     undefined,
     myOffer,
     theirOffer,
-    fakeNetworkParametersPreVasil.slot
+    fakeNetworkParameters.slot
   );
 
   expect(txBuilderInBalance(txBuilder)).toBeTruthy();
@@ -576,7 +556,7 @@ test("TxBuilder.constructTxBuilder - need two utxos", () => {
     undefined,
     myOffer,
     theirOffer,
-    fakeNetworkParametersPreVasil.slot
+    fakeNetworkParameters.slot
   );
 
   expect(txBuilderInBalance(txBuilder)).toBeTruthy();
@@ -606,7 +586,7 @@ test("TxBuilder.constructTxBuilder - ADA against ADA - one utxo each - with comm
     mkCommission("Mainnet"),
     myOffer,
     theirOffer,
-    fakeNetworkParametersPreVasil.slot
+    fakeNetworkParameters.slot
   );
 
   expect(txBuilderInBalance(txBuilder)).toBeTruthy();
@@ -639,7 +619,7 @@ test("TxBuilder.constructTxBuilder - ADA against ADA - 2- utxos each with commis
     mkCommission("Mainnet"),
     myOffer,
     theirOffer,
-    fakeNetworkParametersPreVasil.slot
+    fakeNetworkParameters.slot
   );
 
   expect(txBuilderInBalance(txBuilder)).toBeTruthy();
@@ -672,7 +652,7 @@ test("TxBuilder.constructTxBuilder - I don not have enough ADA to send", () => {
       undefined,
       myOffer,
       theirOffer,
-      fakeNetworkParametersPreVasil.slot
+      fakeNetworkParameters.slot
     );
   } catch (coughtErr) {
     if (coughtErr instanceof TxBuilder.InsufficientAdaError) {
@@ -711,7 +691,7 @@ test("TxBuilder.constructTxBuilder - They do not have enough ADA to send", () =>
       undefined,
       myOffer,
       theirOffer,
-      fakeNetworkParametersPreVasil.slot
+      fakeNetworkParameters.slot
     );
   } catch (coughtErr) {
     if (coughtErr instanceof TxBuilder.InsufficientAdaError) {
@@ -750,7 +730,7 @@ test("TxBuilder.constructTxBuilder - I do not have enough ADA to cover commissio
       mkCommission("Mainnet"),
       myOffer,
       theirOffer,
-      fakeNetworkParametersPreVasil.slot
+      fakeNetworkParameters.slot
     );
   } catch (coughtErr) {
     if (coughtErr instanceof TxBuilder.InsufficientAdaError) {
@@ -789,7 +769,7 @@ test("TxBuilder.constructTxBuilder - They do not have enough ADA to cover commis
       mkCommission("Mainnet"),
       myOffer,
       theirOffer,
-      fakeNetworkParametersPreVasil.slot
+      fakeNetworkParameters.slot
     );
   } catch (coughtErr) {
     if (coughtErr instanceof TxBuilder.InsufficientAdaError) {
@@ -844,7 +824,7 @@ test("TxBuilder.constructTxBuilder - I can not cover native asset", () => {
       mkCommission("Mainnet"),
       myOffer,
       theirOffer,
-      fakeNetworkParametersPreVasil.slot
+      fakeNetworkParameters.slot
     );
   } catch (coughtErr) {
     if (coughtErr instanceof TxBuilder.InsufficientNativeAssetError) {
@@ -903,7 +883,7 @@ test("TxBuilder.constructTxBuilder - They can not cover native asset", () => {
       mkCommission("Mainnet"),
       myOffer,
       theirOffer,
-      fakeNetworkParametersPreVasil.slot
+      fakeNetworkParameters.slot
     );
   } catch (coughtErr) {
     if (coughtErr instanceof TxBuilder.InsufficientNativeAssetError) {
