@@ -21,8 +21,12 @@ export default function ChangeLog() {
           Changelog
         </Heading>
         <VStack spacing={3} width={"fill"} align="left">
-          <Entry title="Vasil Hardwork" version="2.0.0" date="2022-08-14">
-            <Add>Add support for Vasil</Add>
+          <Entry title="Vasil Hardfork" version="3.0.0" date="2022-09-25">
+            <Add>Enable Vasil Hardfork</Add>
+            <Update>Remove and update dependencies</Update>
+          </Entry>
+          <Entry title="Pre-Vasil Hardfork" version="2.0.0" date="2022-08-14">
+            <Add>Prepare for Vasil Hardfork</Add>
           </Entry>
           <Entry title="Security Update" version="1.7.1" date="2022-08-12">
             <Update>Guard against spoofed UTxOs</Update>
