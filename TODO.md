@@ -8,6 +8,9 @@ You can think of this as the step before I create a task.
 - enable libcheck in tsconfig (cardano-seralization lib has build error)
 - useContext
 - zustand vs redux
+- Add support for more caradno networks beyond mainnet and testnet
+- add autoconnect wallet
+- add setting to disable autoconnect
 - rewrite sync algorithm
 - rewrite transaction construction algorithm
 - Both should send completed transaction...
