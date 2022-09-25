@@ -9,7 +9,6 @@ import {
 import * as TestUtil from "./TestUtil";
 import * as ValueExtra from "./ValueExtra";
 import * as Cardano from "@emurgo/cardano-serialization-lib-nodejs";
-import * as CardanoOld from "cardano-serialization-lib-nodejs-old";
 
 const mkScriptHash = TestUtil.mkScriptHash(Cardano);
 const mkAssetName = TestUtil.mkAssetName(Cardano);
@@ -277,7 +276,7 @@ const fakeNetworkParametersPostVasil: TxBuilder.NetworkParameters = {
   slot: 300,
 };
 
-const fakeFeeConfigPreVasil = TxBuilder.mkFeeConfig(Cardano)(
+const fakeFeeConfig = TxBuilder.mkFeeConfig(Cardano)(
   "Mainnet",
   fakeNetworkParametersPreVasil
 );
@@ -296,7 +295,7 @@ const fakeTheirAddress = Address.from_bech32(
 // TxBuilder.constructTxBuilder
 ////////////////////////////////////////////////////////////////////////////////
 
-const outputSelection = TxBuilder.outputSelection(Cardano, CardanoOld);
+const outputSelection = TxBuilder.outputSelection(Cardano);
 const sumOutputs = TxBuilder.sumOutputs(Cardano);
 const sumUtxos = TxBuilder.sumUtxos(Cardano);
 
@@ -306,25 +305,20 @@ test("outputSelection - Send Nothing", () => {
   const utxos = outputSelection(
     receiver,
     Cardano.Value.zero(),
-    fakeFeeConfigPreVasil.coinsPerUtxoWord,
-    fakeFeeConfigPreVasil.dataCost
+    fakeFeeConfig.dataCost
   );
 
   expect(utxos.length).toBe(0);
   expect(ValueExtra.eq(Cardano.Value.zero(), sumOutputs(utxos))).toBeTruthy();
 });
 
-test("outputSelection - Send 2 ADA", () => {
+test.only("outputSelection - Send 2 ADA", () => {
   const receiver = fakeMyAddress;
   const value = Value.new(BigNum.from_str("2000000"));
 
-  const outputs = outputSelection(
-    receiver,
-    value,
-    fakeFeeConfigPreVasil.coinsPerUtxoWord,
-    fakeFeeConfigPreVasil.dataCost
-  );
-
+  const outputs = outputSelection(receiver, value, fakeFeeConfig.dataCost);
+  console.log("value", value.coin().to_str());
+  console.log("sum", sumOutputs(outputs).coin().to_str());
   expect(ValueExtra.eq(value, sumOutputs(outputs))).toBeTruthy();
 });
 
@@ -332,12 +326,7 @@ test("outputSelection - Send 0.5 ADA", () => {
   const receiver = fakeMyAddress;
   const value = Value.new(BigNum.from_str("500000"));
 
-  const outputs = outputSelection(
-    receiver,
-    value,
-    fakeFeeConfigPreVasil.coinsPerUtxoWord,
-    fakeFeeConfigPreVasil.dataCost
-  );
+  const outputs = outputSelection(receiver, value, fakeFeeConfig.dataCost);
   const outputVal = sumOutputs(outputs);
 
   // Should have added min ADA amount
@@ -360,12 +349,7 @@ test("outputSelection - Send 2 ADA + one asset", () => {
     },
   ]);
 
-  const outputs = outputSelection(
-    receiver,
-    value,
-    fakeFeeConfigPreVasil.coinsPerUtxoWord,
-    fakeFeeConfigPreVasil.dataCost
-  );
+  const outputs = outputSelection(receiver, value, fakeFeeConfig.dataCost);
   const outputVal = sumOutputs(outputs);
 
   // Should have added min ADA amount
@@ -373,45 +357,6 @@ test("outputSelection - Send 2 ADA + one asset", () => {
   expect(outputVal.multiasset()?.get(hash)?.get(assetName)?.to_str()).toBe(
     "100000"
   );
-});
-
-test("outputSelection - Send 0 ADA + 1 asset - Pre Vasil", () => {
-  const hash = mkScriptHash(1);
-  const assetName = mkAssetName("a");
-  const ada = BigNum.from_str("0");
-  const amount = BigNum.from_str("10");
-
-  const value = mkValue(ada, [
-    {
-      hash: hash,
-      assets: [{ amount: amount, assetName: assetName }],
-    },
-  ]);
-  const outputs = outputSelection(
-    fakeTheirAddress,
-    value,
-    fakeFeeConfigPreVasil.coinsPerUtxoWord,
-    fakeFeeConfigPreVasil.dataCost
-  );
-
-  const total = sumOutputs(outputs);
-
-  // Check native asset
-  expect(total.multiasset()?.get(hash)?.get(assetName)?.to_str()).toBe(
-    amount.to_str()
-  );
-  const valueOld = CardanoOld.Value.from_bytes(value.to_bytes());
-  const coinsPerUtxoWordOld = CardanoOld.BigNum.from_bytes(
-    fakeFeeConfigPreVasil.coinsPerUtxoWord.to_bytes()
-  );
-  const min_ada_old = CardanoOld.min_ada_required(
-    valueOld,
-    false,
-    coinsPerUtxoWordOld
-  );
-  const min_ada = Cardano.BigNum.from_bytes(min_ada_old.to_bytes());
-
-  expect(min_ada.compare(total.coin()) === 0).true;
 });
 
 test("outputSelection - Send 0 ADA + 1 asset - Post Vasil", () => {
@@ -429,7 +374,6 @@ test("outputSelection - Send 0 ADA + 1 asset - Post Vasil", () => {
   const outputs = outputSelection(
     fakeTheirAddress,
     value,
-    fakeFeeConfigPostVasil.coinsPerUtxoWord,
     fakeFeeConfigPostVasil.dataCost
   );
 
@@ -441,7 +385,7 @@ test("outputSelection - Send 0 ADA + 1 asset - Post Vasil", () => {
   );
   const min_ada = Cardano.min_ada_for_output(
     outputs[0],
-    fakeFeeConfigPostVasil.dataCost!
+    fakeFeeConfigPostVasil.dataCost
   );
 
   expect(min_ada.compare(total.coin()) === 0).true;
@@ -463,7 +407,7 @@ test("inputSelection - Simple send of 8 ada", () => {
 // TxBuilder.constructTxBuilder
 ////////////////////////////////////////////////////////////////////////////////
 
-const constructTxBuilder = TxBuilder.constructTxBuilder(Cardano, CardanoOld);
+const constructTxBuilder = TxBuilder.constructTxBuilder(Cardano);
 const mkCommission = TxBuilder.mkCommission(Cardano);
 
 test("TxBuilder.constructTxBuilder - No Commission - Simple send of ada", () => {
@@ -488,7 +432,7 @@ test("TxBuilder.constructTxBuilder - No Commission - Simple send of ada", () => 
   };
 
   const txBuilder = constructTxBuilder(
-    fakeFeeConfigPreVasil,
+    fakeFeeConfig,
     undefined,
     myOffer,
     theirOffer,
@@ -562,7 +506,7 @@ test("TxBuilder.constructTxBuilder - No Commission - Simple send of asset", () =
   };
 
   const txBuilder = constructTxBuilder(
-    fakeFeeConfigPreVasil,
+    fakeFeeConfig,
     undefined,
     myOffer,
     theirOffer,
@@ -628,7 +572,7 @@ test("TxBuilder.constructTxBuilder - need two utxos", () => {
   };
 
   const txBuilder = constructTxBuilder(
-    fakeFeeConfigPreVasil,
+    fakeFeeConfig,
     undefined,
     myOffer,
     theirOffer,
@@ -658,7 +602,7 @@ test("TxBuilder.constructTxBuilder - ADA against ADA - one utxo each - with comm
   };
 
   const txBuilder = constructTxBuilder(
-    fakeFeeConfigPreVasil,
+    fakeFeeConfig,
     mkCommission("Mainnet"),
     myOffer,
     theirOffer,
@@ -691,7 +635,7 @@ test("TxBuilder.constructTxBuilder - ADA against ADA - 2- utxos each with commis
   };
 
   const txBuilder = constructTxBuilder(
-    fakeFeeConfigPreVasil,
+    fakeFeeConfig,
     mkCommission("Mainnet"),
     myOffer,
     theirOffer,
@@ -724,7 +668,7 @@ test("TxBuilder.constructTxBuilder - I don not have enough ADA to send", () => {
   let err: TxBuilder.InsufficientAdaError | undefined = undefined;
   try {
     constructTxBuilder(
-      fakeFeeConfigPreVasil,
+      fakeFeeConfig,
       undefined,
       myOffer,
       theirOffer,
@@ -763,7 +707,7 @@ test("TxBuilder.constructTxBuilder - They do not have enough ADA to send", () =>
   let err: TxBuilder.InsufficientAdaError | undefined = undefined;
   try {
     constructTxBuilder(
-      fakeFeeConfigPreVasil,
+      fakeFeeConfig,
       undefined,
       myOffer,
       theirOffer,
@@ -802,7 +746,7 @@ test("TxBuilder.constructTxBuilder - I do not have enough ADA to cover commissio
   let err: TxBuilder.InsufficientAdaError | undefined = undefined;
   try {
     constructTxBuilder(
-      fakeFeeConfigPreVasil,
+      fakeFeeConfig,
       mkCommission("Mainnet"),
       myOffer,
       theirOffer,
@@ -841,7 +785,7 @@ test("TxBuilder.constructTxBuilder - They do not have enough ADA to cover commis
   let err: TxBuilder.InsufficientAdaError | undefined = undefined;
   try {
     constructTxBuilder(
-      fakeFeeConfigPreVasil,
+      fakeFeeConfig,
       mkCommission("Mainnet"),
       myOffer,
       theirOffer,
@@ -896,7 +840,7 @@ test("TxBuilder.constructTxBuilder - I can not cover native asset", () => {
   let err: TxBuilder.InsufficientNativeAssetError | undefined = undefined;
   try {
     constructTxBuilder(
-      fakeFeeConfigPreVasil,
+      fakeFeeConfig,
       mkCommission("Mainnet"),
       myOffer,
       theirOffer,
@@ -955,7 +899,7 @@ test("TxBuilder.constructTxBuilder - They can not cover native asset", () => {
   let err: TxBuilder.InsufficientNativeAssetError | undefined = undefined;
   try {
     constructTxBuilder(
-      fakeFeeConfigPreVasil,
+      fakeFeeConfig,
       mkCommission("Mainnet"),
       myOffer,
       theirOffer,

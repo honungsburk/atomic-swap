@@ -21,7 +21,6 @@ import * as ValueExtra from "./ValueExtra";
 import * as CardanoUtil from "./Util";
 import * as TTLBound from "../Network/TTLBound";
 import * as CardanoSerializationLib from "@emurgo/cardano-serialization-lib-browser";
-import * as CardanoSerializationLibOld from "cardano-serialization-lib-browser-old";
 import * as Extra from "../Util/Extra";
 import * as Util from "src/Util";
 import * as TestUtil from "./TestUtil";
@@ -39,8 +38,7 @@ export type FeeConfig = {
   keyDeposit: BigNum;
   maxValSize: number;
   maxTxSize: number;
-  coinsPerUtxoWord: BigNum; // Legacy parameter
-  dataCost?: DataCost;
+  dataCost: DataCost;
 };
 
 export type Commission = {
@@ -60,10 +58,7 @@ export async function createTTLBound(
 }
 
 const buildTxBody =
-  (
-    lib: typeof CardanoSerializationLib,
-    lib2: typeof CardanoSerializationLibOld
-  ) =>
+  (lib: typeof CardanoSerializationLib) =>
   async (
     walletConnector: BasicWallet,
     myOffer: OfferParams,
@@ -74,7 +69,7 @@ const buildTxBody =
     const commission = mkCommission(lib)(networkID);
     const networkParameters = await initTx(networkID);
     const feeConfig = mkFeeConfig(lib)(networkID, networkParameters);
-    const txBuilder = constructTxBuilder(lib, lib2)(
+    const txBuilder = constructTxBuilder(lib)(
       feeConfig,
       commission,
       myOffer,
@@ -85,17 +80,14 @@ const buildTxBody =
   };
 
 export const signTx =
-  (
-    lib: typeof CardanoSerializationLib,
-    lib2: typeof CardanoSerializationLibOld
-  ) =>
+  (lib: typeof CardanoSerializationLib) =>
   async (
     walletConnector: BasicWallet,
     myOffer: OfferParams,
     theirOffer: OfferParams,
     ttl: number
   ) => {
-    const txBody: TransactionBody = await buildTxBody(lib, lib2)(
+    const txBody: TransactionBody = await buildTxBody(lib)(
       walletConnector,
       myOffer,
       theirOffer,
@@ -112,10 +104,7 @@ export const signTx =
   };
 
 export const makeTx =
-  (
-    lib: typeof CardanoSerializationLib,
-    lib2: typeof CardanoSerializationLibOld
-  ) =>
+  (lib: typeof CardanoSerializationLib) =>
   async (
     walletConnector: BasicWallet,
     myOffer: OfferParams,
@@ -124,7 +113,7 @@ export const makeTx =
     ttl: number
   ) => {
     // Reverse order of theirOffer, myOffer so that we build the transactions identically to the other one
-    const txBody: TransactionBody = await buildTxBody(lib, lib2)(
+    const txBody: TransactionBody = await buildTxBody(lib)(
       walletConnector,
       theirOffer,
       myOffer,
@@ -178,15 +167,9 @@ const mkBuilder =
       .max_value_size(feeConfig.maxValSize)
       .pool_deposit(feeConfig.poolDepsit);
 
-    if (feeConfig.dataCost) {
-      configBuilder = configBuilder.coins_per_utxo_byte(
-        feeConfig.dataCost.coins_per_byte()
-      );
-    } else {
-      configBuilder = configBuilder.coins_per_utxo_word(
-        feeConfig.coinsPerUtxoWord
-      );
-    }
+    configBuilder = configBuilder.coins_per_utxo_byte(
+      feeConfig.dataCost.coins_per_byte()
+    );
 
     const txBuilder = lib.TransactionBuilder.new(configBuilder.build());
 
@@ -236,10 +219,7 @@ export function validUTxOs(
  * @returns
  */
 export const constructTxBuilder =
-  (
-    lib: typeof CardanoSerializationLib,
-    lib2: typeof CardanoSerializationLibOld
-  ) =>
+  (lib: typeof CardanoSerializationLib) =>
   (
     feeConfig: FeeConfig,
     commission: Commission | undefined,
@@ -270,10 +250,9 @@ export const constructTxBuilder =
     }
 
     // What I should receive
-    const whatIRecieve = outputSelection(lib, lib2)(
+    const whatIRecieve = outputSelection(lib)(
       myOffer.address,
       theirOffer.value,
-      feeConfig.coinsPerUtxoWord,
       feeConfig.dataCost
     );
     const extraINeedToAdd = sumOutputs(lib)(whatIRecieve).checked_sub(
@@ -284,10 +263,9 @@ export const constructTxBuilder =
     });
 
     // What they should receive
-    const whatTheyRecieve = outputSelection(lib, lib2)(
+    const whatTheyRecieve = outputSelection(lib)(
       theirOffer.address,
       myOffer.value,
-      feeConfig.coinsPerUtxoWord,
       feeConfig.dataCost
     );
     const extraTheyNeedToAdd = sumOutputs(lib)(whatTheyRecieve).checked_sub(
@@ -377,16 +355,14 @@ export const constructTxBuilder =
       }
 
       // We not construct the change (which is most likely incorrect for a few iterations of the loop)
-      const myUtxosBack: TransactionOutput[] = outputSelection(lib, lib2)(
+      const myUtxosBack: TransactionOutput[] = outputSelection(lib)(
         myOffer.address,
         myChangeEstimate,
-        feeConfig.coinsPerUtxoWord,
         feeConfig.dataCost
       );
-      const theirUtxosBack: TransactionOutput[] = outputSelection(lib, lib2)(
+      const theirUtxosBack: TransactionOutput[] = outputSelection(lib)(
         theirOffer.address,
         theirChangeEstimate,
-        feeConfig.coinsPerUtxoWord,
         feeConfig.dataCost
       );
 
@@ -675,17 +651,14 @@ export const sumUtxos =
     return total;
   };
 
+/**
+ *
+ * @param lib - the cardano lib to use
+ * @returns a list of tx outputs that will cover the value we want to send (with min ada amount covered)
+ */
 export const outputSelection =
-  (
-    lib: typeof CardanoSerializationLib,
-    lib2: typeof CardanoSerializationLibOld
-  ) =>
-  (
-    reciever: Address,
-    value: Value,
-    coinsPerUtxoWord: BigNum,
-    dataCost?: DataCost
-  ) => {
+  (lib: typeof CardanoSerializationLib) =>
+  (reciever: Address, value: Value, dataCost: DataCost) => {
     const outputs: TransactionOutput[] = [];
 
     if (ValueExtra.eq(value, lib.Value.zero())) {
@@ -696,27 +669,11 @@ export const outputSelection =
 
     let min_ada = lib.BigNum.zero();
 
-    // Support both the old and new way of computing the cost!
-    // when vasil happens you can remove the old way!
-    if (dataCost) {
-      const fakeOutput = lib.TransactionOutput.new(
-        TestUtil.mkAddress(lib)(0),
-        value
-      );
-      min_ada = lib.min_ada_for_output(fakeOutput, dataCost);
-    } else {
-      // We must convert the values to instances from the old version...
-      const valueOld = lib2.Value.from_bytes(value.to_bytes());
-      const coinsPerUtxoWordOld = lib2.BigNum.from_bytes(
-        coinsPerUtxoWord.to_bytes()
-      );
-      const min_ada_old = lib2.min_ada_required(
-        valueOld,
-        false,
-        coinsPerUtxoWordOld
-      );
-      min_ada = lib.BigNum.from_bytes(min_ada_old.to_bytes());
-    }
+    const fakeOutput = lib.TransactionOutput.new(
+      TestUtil.mkAddress(lib)(0),
+      value
+    );
+    min_ada = lib.min_ada_for_output(fakeOutput, dataCost);
 
     if (value.coin().compare(min_ada) < 0) {
       val = lib.Value.new(min_ada);
@@ -768,17 +725,9 @@ export const mkFeeConfig =
       keyDeposit: lib.BigNum.from_str(networkParameters.keyDeposit),
       maxValSize: networkParameters.maxValSize,
       maxTxSize: networkParameters.maxTxSize,
-      // Decide the correct cost model depending on the which version of the network!
-      // Change to only use the new one when vasil hits mainnet
-      coinsPerUtxoWord: lib.BigNum.from_str(networkParameters.coinsPerUtxoWord),
-      dataCost:
-        networkID === "Mainnet"
-          ? lib.DataCost.new_coins_per_byte(
-              lib.BigNum.from_str(networkParameters.coinsPerUtxoWord)
-            )
-          : lib.DataCost.new_coins_per_byte(
-              lib.BigNum.from_str(networkParameters.coinsPerUtxoByte)
-            ),
+      dataCost: lib.DataCost.new_coins_per_byte(
+        lib.BigNum.from_str(networkParameters.coinsPerUtxoWord)
+      ),
     };
   };
 

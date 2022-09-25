@@ -637,10 +637,12 @@ function SessionController(props: {
           const offer = buildOffer(props.session);
           if (offer !== undefined) {
             try {
-              const witnessSet = await TxBuilder.signTx(
-                props.lib,
-                CardanoSerializationLibOld
-              )(wallet, offer[0], offer[1], props.session.getNegotiatedTTL());
+              const witnessSet = await TxBuilder.signTx(props.lib)(
+                wallet,
+                offer[0],
+                offer[1],
+                props.session.getNegotiatedTTL()
+              );
               props.session.createOffer(witnessSet);
             } catch (err: any) {
               toastOnTxFail(err, toast);
@@ -670,10 +672,7 @@ function SessionController(props: {
           const offer = buildOffer(props.session);
           if (offer !== undefined) {
             try {
-              const txID = await TxBuilder.makeTx(
-                props.lib,
-                CardanoSerializationLibOld
-              )(
+              const txID = await TxBuilder.makeTx(props.lib)(
                 wallet,
                 offer[0],
                 offer[1],
