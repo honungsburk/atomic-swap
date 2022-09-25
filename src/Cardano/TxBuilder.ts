@@ -773,7 +773,7 @@ export const mkFeeConfig =
       coinsPerUtxoWord: lib.BigNum.from_str(networkParameters.coinsPerUtxoWord),
       dataCost:
         networkID === "Mainnet"
-          ? lib.DataCost.new_coins_per_word(
+          ? lib.DataCost.new_coins_per_byte(
               lib.BigNum.from_str(networkParameters.coinsPerUtxoWord)
             )
           : lib.DataCost.new_coins_per_byte(
