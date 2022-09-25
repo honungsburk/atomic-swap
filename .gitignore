@@ -28,3 +28,5 @@ dist-ssr
 
 cardano-searialization-lib/
 secrets.*
+
+debug.txt
