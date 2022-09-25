@@ -466,7 +466,7 @@ function toastOnTxFail(err: any, toast: any) {
     });
   } else if (isWebBridgeError(err)) {
     toast({
-      title: err.stringCode(),
+      title: "Wallet." + err.stringCode(),
       description: err.info,
       status: "error",
       duration: 9000,
