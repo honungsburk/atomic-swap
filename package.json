@@ -29,13 +29,14 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-icons": "^4.3.1",
+    "react-kawaii": "^0.18.0",
     "react-router-dom": "^6.2.1",
     "react-scripts": "^5.0.0",
     "react-virtualized-auto-sizer": "^1.0.6",
     "react-window": "^1.8.6",
     "react-window-dynamic-list": "^2.4.2",
-    "react-kawaii": "^0.18.0",
-    "web-vitals": "^1.1.2"
+    "web-vitals": "^1.1.2",
+    "zustand": "^4.1.1"
   },
   "devDependencies": {
     "@emurgo/cardano-serialization-lib-nodejs": "^11.0.5",

@@ -18,6 +18,7 @@ import { BasicWallet } from "cardano-web-bridge-wrapper/lib/BasicWallet";
 import { Ghost } from "./ChakraKawaii";
 import colors from "../Theme/colors";
 import * as CardanoSerializationLib from "@emurgo/cardano-serialization-lib-browser";
+import * as Store from "src/Store";
 
 export default function WalletSelector(props: {
   onWalletChange: (wallet: BasicWallet) => void;
@@ -30,24 +31,20 @@ export default function WalletSelector(props: {
     { bgColor: "background.dark" }
   );
 
-  const walletChoices: JSX.Element[] = [];
-
-  for (const property in window.cardano) {
-    const api: any = window.cardano[property];
-    if (CIP30.isInitalAPI(api)) {
-      walletChoices.push(
-        <WalletChoice
-          lib={props.lib}
-          key={api.name}
-          api={api}
-          onWalletChange={(wallet) => {
-            props.onClose();
-            props.onWalletChange(wallet);
-          }}
-        />
-      );
-    }
-  }
+  //TODO: this is inefficent... don't want to redo this all the time
+  const walletChoices: JSX.Element[] = Store.Wallet.injectedAPIs().map(
+    (api) => (
+      <WalletChoice
+        lib={props.lib}
+        key={api.name}
+        api={api}
+        onWalletChange={(wallet) => {
+          props.onClose();
+          props.onWalletChange(wallet);
+        }}
+      />
+    )
+  );
 
   return (
     <Modal isOpen={props.isOpen} onClose={props.onClose}>
