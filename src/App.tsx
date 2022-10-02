@@ -1,7 +1,6 @@
 import React, { Suspense, lazy } from "react";
 import { Route, Routes } from "react-router-dom";
-import { BasicWallet } from "cardano-web-bridge-wrapper/lib/BasicWallet";
-import { Env } from "./Env";
+import * as StoreZ from "src/Store";
 import SessionHolder from "./Network/SessionHolder";
 import * as NetworkSession from "./Network/Session";
 
@@ -41,9 +40,8 @@ function App() {
   const displayMode = PWA.getPWADisplayMode();
 
   // ENV
-  const [wallet, setWallet] = React.useState<BasicWallet | undefined>(
-    undefined
-  );
+  const wallet = StoreZ.Wallet.use((state) => state.wallet);
+
   const [session, setSession] = React.useState<
     NetworkSession.Session | undefined
   >(undefined);
@@ -171,35 +169,16 @@ function App() {
     };
   }, []);
 
-  const env: Env = {
-    wallet: wallet,
-    changeWallet: setWallet,
-  };
-
   return (
     <PageErrorBoundary>
       <Suspense fallback={<Loading />}>
         <Routes>
-          <Route
-            path="/"
-            element={
-              <Layout
-                env={env}
-                session={session}
-                lib={CardanoSerializationLib}
-              />
-            }
-          >
+          <Route path="/" element={<Layout session={session} />}>
             <Route
               path="/session/:theirID"
               element={
                 <PageErrorBoundary>
-                  <Trade
-                    env={env}
-                    session={session}
-                    store={store}
-                    lib={CardanoSerializationLib}
-                  />
+                  <Trade session={session} store={store} />
                 </PageErrorBoundary>
               }
             />
@@ -207,12 +186,7 @@ function App() {
               path="/session/"
               element={
                 <PageErrorBoundary>
-                  <Trade
-                    env={env}
-                    session={session}
-                    store={store}
-                    lib={CardanoSerializationLib}
-                  />
+                  <Trade session={session} store={store} />
                 </PageErrorBoundary>
               }
             />
@@ -229,12 +203,7 @@ function App() {
               element={
                 <PageErrorBoundary>
                   {displayMode === "standalone" ? (
-                    <Trade
-                      env={env}
-                      session={session}
-                      store={store}
-                      lib={CardanoSerializationLib}
-                    />
+                    <Trade session={session} store={store} />
                   ) : (
                     <Home channelState={channelState} />
                   )}

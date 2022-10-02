@@ -1,19 +1,15 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import { Env } from "../Env";
 import { ChannelState } from "../Network/Channel";
 import * as NetworkSession from "../Network/Session";
 import Store from "../Storage/Store";
 import Session from "./Session";
 import HasNoWallet from "./Session/HasNoWallet";
 import PendingTrade from "./Session/PendingTrade";
-import * as CardanoSerializationLib from "@emurgo/cardano-serialization-lib-browser";
 
 export default function Trade(props: {
-  env: Env;
   session?: NetworkSession.Session;
   store?: Store;
-  lib?: typeof CardanoSerializationLib;
 }) {
   const { theirID } = useParams();
   const [hasPendingTrade, setHasPendingTrade] = React.useState<boolean>(false);
@@ -49,17 +45,12 @@ export default function Trade(props: {
     return <></>; // TODO: display error message
   } else if (props.store === undefined) {
     return <></>; // TODO: display error message
-  } else if (props.lib === undefined) {
-    return <></>; // TODO: display error message
   } else {
     return (
       <Session
-        lib={props.lib}
-        onWalletChange={props.env.changeWallet}
         channelState={channelState}
         session={props.session}
         store={props.store}
-        wallet={props.env.wallet}
       />
     );
   }

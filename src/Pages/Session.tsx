@@ -19,7 +19,6 @@ import type {
   Value,
 } from "@emurgo/cardano-serialization-lib-browser";
 import * as CardanoSerializationLib from "@emurgo/cardano-serialization-lib-browser";
-import * as CardanoSerializationLibOld from "cardano-serialization-lib-browser-old";
 import { CreditCard, Ghost } from "../components/ChakraKawaii";
 import AssetSelector from "../components/AssetSelector";
 
@@ -51,22 +50,23 @@ import Copy from "../components/Copy";
 import ToolTip from "../components/ToolTip";
 import * as Icons from "../components/Icons";
 import { DialogBox } from "../components/DialogBox";
+import * as Cardano from "@emurgo/cardano-serialization-lib-browser";
+import * as StoreZ from "src/Store";
 
 function Session(props: {
-  onWalletChange: (wallet: BasicWallet) => void;
   channelState: ChannelState;
-  wallet?: BasicWallet;
   session: NetworkSession.Session;
   store: Store;
-  lib: typeof CardanoSerializationLib;
 }) {
+  const wallet = StoreZ.Wallet.use((state) => state.wallet);
+
   const layout: "vertical" | "horizontal" | undefined = useBreakpointValue({
     base: "vertical",
     lg: "horizontal",
   });
   const navigate = useNavigate();
   const toast = useToast();
-  const commission = props.lib.BigNum.from_str("1000000");
+  const commission = Cardano.BigNum.from_str("1000000");
 
   ////////////////////////////////////////////////////////////////////////////////
   // Available Value
@@ -75,17 +75,17 @@ function Session(props: {
   const [availableValue, setAvailableValue] = React.useState<{
     val: Value;
     networkID: NetworkID;
-  }>({ val: props.lib.Value.zero(), networkID: "Mainnet" });
+  }>({ val: Cardano.Value.zero(), networkID: "Mainnet" });
   React.useEffect(() => {
     const update = async () => {
-      if (props.wallet !== undefined) {
-        const balance = await props.wallet.getBalance();
-        const networkID = await props.wallet.getNetworkId();
+      if (wallet !== undefined) {
+        const balance = await wallet.getBalance();
+        const networkID = await wallet.getNetworkId();
         setAvailableValue({ val: balance, networkID: networkID });
       }
     };
     update();
-  }, [props.wallet]);
+  }, [wallet]);
 
   const [availableAssets, setAvailableAssets] = React.useState<
     CardanoAsset.Asset[]
@@ -127,14 +127,14 @@ function Session(props: {
           availableValue.val,
           value,
           myNetworkID,
-          props.lib
+          Cardano
         );
         setMySelectedAssets(assets);
       };
       exec(props.session.getMyValue());
       return props.session.onMyValue(exec);
     }
-  }, [props.session, myNetworkID, availableValue, props.lib]);
+  }, [props.session, myNetworkID, availableValue]);
 
   const selectedAssetsUnits: Set<string> = new Set();
   mySelectedAssets.forEach((asset) =>
@@ -188,14 +188,14 @@ function Session(props: {
         const assets = await deriveTheirSelectedAssets(
           value,
           theirNetworkID,
-          props.lib
+          Cardano
         );
         setTheirSelectedAssets(assets);
       };
       exec(props.session.getTheirValue());
       return props.session.onTheirValue(exec);
     }
-  }, [props.session, theirNetworkID, props.lib]);
+  }, [props.session, theirNetworkID]);
 
   // Lock
 
@@ -286,11 +286,9 @@ function Session(props: {
       myAddress?.to_bech32("addr") === theirAddress?.to_bech32("addr"),
     myAddress: myAddress,
     theirAddress: theirAddress,
-    onWalletChange: props.onWalletChange,
-    hasWallet: props.wallet !== undefined,
+    hasWallet: wallet !== undefined,
     channelState: props.channelState,
     link: `${getUrl.protocol}//${getUrl.host}/session/${props.session.getID()}`,
-    wallet: props.wallet,
     myNetworkID: myNetworkID,
     iAmLocked: myLock,
     theirLock: theirLock,
@@ -310,7 +308,6 @@ function Session(props: {
     session: props.session,
     theirNetworkID: theirNetworkID,
     theirSelectedAssets: theirSelectedAssets,
-    lib: props.lib,
   };
 
   if (layout === "horizontal") {
@@ -325,10 +322,8 @@ type LayoutProps = {
   myAddress: Address | null;
   theirAddress: Address | null;
   hasWallet: boolean;
-  onWalletChange: (wallet: BasicWallet) => void;
   link: string;
   channelState: ChannelState;
-  wallet?: BasicWallet;
   myNetworkID: NetworkID | null;
   iAmLocked: boolean;
   theirLock: boolean;
@@ -348,8 +343,6 @@ type LayoutProps = {
 
   theirNetworkID: NetworkID | null;
   theirSelectedAssets: CardanoAsset.Asset[];
-
-  lib: typeof CardanoSerializationLib;
 };
 
 function HorizontalLayout(props: LayoutProps) {
@@ -357,11 +350,8 @@ function HorizontalLayout(props: LayoutProps) {
     <Flex my={6}>
       <Spacer />
       <MySide
-        lib={props.lib}
         isTesting={props.isTesting}
         address={props.myAddress}
-        hasWallet={props.hasWallet}
-        onWalletChange={props.onWalletChange}
         networkID={props.myNetworkID}
         isLocked={props.iAmLocked}
         commission={props.commission}
@@ -374,12 +364,10 @@ function HorizontalLayout(props: LayoutProps) {
       <VStack spacing={8}>
         <Header />
         <SessionController
-          lib={props.lib}
           numberOfAssets={
             props.mySelectedAssets.length + props.theirSelectedAssets.length
           }
           isTesting={props.isTesting}
-          wallet={props.wallet}
           myLock={props.iAmLocked}
           theirLock={props.theirLock}
           session={props.session}
@@ -389,7 +377,6 @@ function HorizontalLayout(props: LayoutProps) {
       </VStack>
       <Spacer />
       <TheirSide
-        lib={props.lib}
         isLocked={props.iAmLocked}
         isTesting={props.isTesting}
         address={props.theirAddress}
@@ -408,11 +395,8 @@ function VerticalLayout(props: LayoutProps) {
   return (
     <VStack my={3} spacing={12}>
       <MySide
-        lib={props.lib}
         isTesting={props.isTesting}
         address={props.myAddress}
-        hasWallet={props.hasWallet}
-        onWalletChange={props.onWalletChange}
         networkID={props.myNetworkID}
         isLocked={props.iAmLocked}
         commission={props.commission}
@@ -422,7 +406,6 @@ function VerticalLayout(props: LayoutProps) {
         addNativeAsset={props.updateNativeAsset}
       />
       <TheirSide
-        lib={props.lib}
         isLocked={props.iAmLocked}
         isTesting={props.isTesting}
         address={props.theirAddress}
@@ -435,12 +418,10 @@ function VerticalLayout(props: LayoutProps) {
       <VStack>
         <Heading>Lock & Sign</Heading>
         <SessionController
-          lib={props.lib}
           numberOfAssets={
             props.mySelectedAssets.length + props.theirSelectedAssets.length
           }
           isTesting={props.isTesting}
-          wallet={props.wallet}
           session={props.session}
           myLock={props.iAmLocked}
           theirLock={props.theirLock}
@@ -488,8 +469,6 @@ const assetWidths = ["100%", "md", "lg", "xl"];
 function MySide(props: {
   isTesting: boolean;
   address: Address | null;
-  hasWallet: boolean;
-  onWalletChange: (wallet: BasicWallet) => void;
   isLocked: boolean;
   networkID: NetworkID | null;
   commission: BigNum;
@@ -501,12 +480,12 @@ function MySide(props: {
     assetName: AssetName,
     amount: BigNum
   ) => void;
-  lib: typeof CardanoSerializationLib;
 }) {
-  if (props.hasWallet) {
+  const wallet = StoreZ.Wallet.use((state) => state.wallet);
+
+  if (wallet) {
     return (
       <MyAssets
-        lib={props.lib}
         isTesting={props.isTesting}
         address={props.address}
         networkID={props.networkID}
@@ -519,29 +498,21 @@ function MySide(props: {
       />
     );
   } else {
-    return (
-      <ConnectWallet onWalletChange={props.onWalletChange} lib={props.lib} />
-    );
+    return <ConnectWallet />;
   }
 }
 
-function ConnectWallet(props: {
-  onWalletChange: (wallet: BasicWallet) => void;
-  lib: typeof CardanoSerializationLib;
-}) {
+function ConnectWallet() {
   return (
     <VStack spacing={6} width={assetWidths}>
       <AssetListHeader
         address={null}
         text="Connect Your Wallet"
         networkID={null}
-        commission={props.lib.BigNum.zero()}
+        commission={Cardano.BigNum.zero()}
       />
       <CreditCard size={200} color={colors.default.characters.creditcard} />
-      <WalletConnectButton
-        onWalletChange={props.onWalletChange}
-        lib={props.lib}
-      />
+      <WalletConnectButton />
     </VStack>
   );
 }
@@ -560,7 +531,6 @@ function MyAssets(props: {
     assetName: AssetName,
     amount: BigNum
   ) => void;
-  lib: typeof CardanoSerializationLib;
 }) {
   return (
     <VStack spacing={6} width={assetWidths}>
@@ -588,11 +558,8 @@ function MyAssets(props: {
 
       {!props.isLocked ? (
         <AddAsset
-          lib={props.lib}
           assets={props.availableAssets}
-          onAddADA={() =>
-            props.onAdaChange(props.lib.BigNum.from_str("1000000"))
-          }
+          onAddADA={() => props.onAdaChange(Cardano.BigNum.from_str("1000000"))}
           onAddNativeAsset={props.addNativeAsset}
         />
       ) : (
@@ -605,18 +572,17 @@ function MyAssets(props: {
 function SessionController(props: {
   isTesting: boolean;
   numberOfAssets: number;
-  wallet?: BasicWallet;
   offer: NetworkSession.Offer | undefined;
   myLock: boolean;
   theirLock: boolean;
   session: NetworkSession.Session;
   missMatchError: NetworkSession.TradeMissMatch | undefined;
-  lib: typeof CardanoSerializationLib;
 }) {
+  const wallet = StoreZ.Wallet.use((state) => state.wallet);
   const toast = useToast();
   let component = <></>;
 
-  if (props.wallet === undefined) {
+  if (wallet === undefined) {
     component = <></>;
   } else if (props.numberOfAssets <= 0) {
     component = (
@@ -625,7 +591,6 @@ function SessionController(props: {
       </DialogBox>
     );
   } else if (props.offer === undefined) {
-    const wallet = props.wallet;
     component = (
       <LockAndSign
         isMatching={props.missMatchError === undefined && !props.isTesting}
@@ -637,7 +602,7 @@ function SessionController(props: {
           const offer = buildOffer(props.session);
           if (offer !== undefined) {
             try {
-              const witnessSet = await TxBuilder.signTx(props.lib)(
+              const witnessSet = await TxBuilder.signTx(Cardano)(
                 wallet,
                 offer[0],
                 offer[1],
@@ -664,7 +629,6 @@ function SessionController(props: {
     );
   } else if (props.offer.kind === "IAmPending") {
     const witness = props.offer.witness;
-    const wallet = props.wallet;
     component = (
       <AcceptOfferPrompt
         onReject={() => props.session.rejectOffer()}
@@ -672,7 +636,7 @@ function SessionController(props: {
           const offer = buildOffer(props.session);
           if (offer !== undefined) {
             try {
-              const txID = await TxBuilder.makeTx(props.lib)(
+              const txID = await TxBuilder.makeTx(Cardano)(
                 wallet,
                 offer[0],
                 offer[1],
@@ -767,10 +731,9 @@ function TheirSide(props: {
   theirSelectedAssets: CardanoAsset.Asset[];
   networkID: NetworkID | null;
   commission: BigNum;
-  lib: typeof CardanoSerializationLib;
 }) {
   if (props.channelState !== "Connected") {
-    return <ThereIsNoOneHere link={props.link} lib={props.lib} />;
+    return <ThereIsNoOneHere link={props.link} />;
   } else {
     return (
       <TheirAssets
@@ -824,10 +787,7 @@ function TheirAssets(props: {
   );
 }
 
-function ThereIsNoOneHere(props: {
-  link: string;
-  lib: typeof CardanoSerializationLib;
-}) {
+function ThereIsNoOneHere(props: { link: string }) {
   return (
     <VStack spacing={6} width={assetWidths}>
       <VStack spacing={1}>
@@ -835,7 +795,7 @@ function ThereIsNoOneHere(props: {
           text="Invite Someone To Trade"
           networkID={null}
           address={null}
-          commission={props.lib.BigNum.zero()}
+          commission={Cardano.BigNum.zero()}
         />
         <Text textAlign={"center"} fontSize={["md", "lg"]}>
           Send the link to someone you want to trade with.
@@ -895,7 +855,6 @@ function AddAsset(props: {
     assetName: AssetName,
     amount: BigNum
   ) => void;
-  lib: typeof CardanoSerializationLib;
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
@@ -916,7 +875,7 @@ function AddAsset(props: {
             props.onAddNativeAsset(
               asset.metadata.hash,
               asset.metadata.assetName,
-              props.lib.BigNum.from_str("1")
+              Cardano.BigNum.from_str("1")
             );
           }
         }}

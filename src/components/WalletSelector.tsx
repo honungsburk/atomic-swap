@@ -21,10 +21,8 @@ import * as CardanoSerializationLib from "@emurgo/cardano-serialization-lib-brow
 import * as Store from "src/Store";
 
 export default function WalletSelector(props: {
-  onWalletChange: (wallet: BasicWallet) => void;
   isOpen: boolean;
   onClose: () => void;
-  lib: typeof CardanoSerializationLib;
 }) {
   const colorMode = useColorModeValue(
     { bgColor: "background.light" },
@@ -33,17 +31,7 @@ export default function WalletSelector(props: {
 
   //TODO: this is inefficent... don't want to redo this all the time
   const walletChoices: JSX.Element[] = Store.Wallet.injectedAPIs().map(
-    (api) => (
-      <WalletChoice
-        lib={props.lib}
-        key={api.name}
-        api={api}
-        onWalletChange={(wallet) => {
-          props.onClose();
-          props.onWalletChange(wallet);
-        }}
-      />
-    )
+    (api) => <WalletChoice key={api.name} api={api} onClose={props.onClose} />
   );
 
   return (
@@ -73,13 +61,13 @@ function NoWallet() {
 
 function WalletChoice(props: {
   api: CIP30.InitalAPI<any>;
-  onWalletChange: (wallet: BasicWallet) => void;
-  lib: typeof CardanoSerializationLib;
+  onClose: () => void;
 }) {
   const colorMode = useColorModeValue(
     { bgColor: "accent.500", bgHoverColor: "accent.500" },
     { bgColor: "accentDarkMode.500", bgHoverColor: "accentDarkMode.400" }
   );
+  const injectWallet = Store.Wallet.use((state) => state.inject);
 
   return (
     <Flex
@@ -92,7 +80,10 @@ function WalletChoice(props: {
       cursor={"pointer"}
       onClick={async () => {
         const fullAPI = await props.api.enable();
-        props.onWalletChange(new BasicWallet(props.api, fullAPI, props.lib));
+        injectWallet(
+          new BasicWallet(props.api, fullAPI, CardanoSerializationLib)
+        );
+        props.onClose();
       }}
       width={"full"}
       rounded={8}

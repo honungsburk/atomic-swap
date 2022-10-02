@@ -20,8 +20,15 @@ export namespace Wallet {
     return walletChoices;
   }
 
-  export const use = create((set) => ({
-    wallet: undefined as undefined | BasicWallet,
-    connect: (wallet: BasicWallet) => set({ wallet: wallet }),
+  type State = {
+    wallet: undefined | BasicWallet;
+    inject: (wallet: BasicWallet) => void;
+    deject: () => void;
+  };
+
+  export const use = create<State>((set) => ({
+    wallet: undefined,
+    inject: (wallet: BasicWallet) => set({ wallet: wallet }),
+    deject: () => set({ wallet: undefined }),
   }));
 }

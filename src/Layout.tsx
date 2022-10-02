@@ -44,9 +44,9 @@ import ComponentErrorBoundary from "./components/ErrorBoundary/ComponentErrorBou
 import AtomicSwapLogo from "./components/Logo";
 import { usePWAInstall } from "./Hooks/PWA";
 import * as CardanoSerializationLib from "@emurgo/cardano-serialization-lib-browser";
+import * as Store from "src/Store";
 
 export default function Layout(props: {
-  env: Env;
   session?: NetworkSession.Session;
   lib?: typeof CardanoSerializationLib;
 }) {
@@ -59,10 +59,12 @@ export default function Layout(props: {
     sm: "horizontal",
   });
 
+  const wallet = Store.Wallet.use((state) => state.wallet);
+
   const checkHealth = async () => {
     try {
-      if (props.env.wallet !== undefined) {
-        const networkId = await props.env.wallet.getNetworkId();
+      if (wallet !== undefined) {
+        const networkId = await wallet.getNetworkId();
         const API = new BlockFrostAPI(networkId);
         const health = await API.health();
         if (BlockFrostTypes.isHealth(health)) {
@@ -81,7 +83,7 @@ export default function Layout(props: {
 
   React.useEffect(() => {
     checkHealth();
-  }, [props.env.wallet]);
+  }, [wallet]);
 
   React.useEffect(() => {
     if (props.session !== undefined) {
@@ -124,7 +126,6 @@ export default function Layout(props: {
         {isHealthy ? <></> : <BackendIsDown />}
         <Box w="full">
           <Header
-            env={props.env}
             session={props.session}
             channelState={channelState}
             lib={props.lib}
@@ -149,7 +150,6 @@ function BackendIsDown() {
 }
 
 function Header(props: {
-  env: Env;
   session?: NetworkSession.Session;
   channelState: ChannelState;
   lib?: typeof CardanoSerializationLib;
@@ -166,7 +166,7 @@ function Header(props: {
         <Spacer />
         <HStack>
           <SessionStatus status={props.channelState} />
-          <NavBar env={props.env} status={props.channelState} lib={props.lib} />
+          <NavBar status={props.channelState} lib={props.lib} />
         </HStack>
       </Flex>
     );
@@ -174,7 +174,7 @@ function Header(props: {
     return (
       <Center p={2}>
         <VStack>
-          <NavBar env={props.env} status={props.channelState} lib={props.lib} />
+          <NavBar status={props.channelState} lib={props.lib} />
           <SessionStatus status={props.channelState} />
         </VStack>
       </Center>
@@ -193,7 +193,6 @@ function Logo() {
 }
 
 function NavBar(props: {
-  env: Env;
   status: ChannelState;
   lib?: typeof CardanoSerializationLib;
 }) {
@@ -219,12 +218,7 @@ function NavBar(props: {
     <HStack bgColor={bgColor} spacing={spacing} px={px} py={py} rounded={32}>
       <Info px={pxE} />
       <Trade px={pxE} channelState={props.status} />
-      <Wallet
-        lib={props.lib}
-        px={pxE}
-        wallet={props.env.wallet}
-        onWalletChange={props.env.changeWallet}
-      />
+      <Wallet px={pxE} />
     </HStack>
   );
 }
@@ -339,14 +333,11 @@ function mkWalletIcon(src?: string) {
   );
 }
 
-function Wallet(props: {
-  wallet?: BasicWallet;
-  onWalletChange: (wallet: BasicWallet) => void;
-  px?: number;
-  lib?: typeof CardanoSerializationLib;
-}) {
+function Wallet(props: { px?: number }) {
+  const wallet = Store.Wallet.use((state) => state.wallet);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [canInstallPWA, installPWA] = usePWAInstall();
+
   return (
     <Box>
       <Menu>
@@ -355,7 +346,7 @@ function Wallet(props: {
           aria-label="User Settings"
           variant="ghost"
           as={IconButton}
-          icon={mkWalletIcon(props.wallet?.icon())}
+          icon={mkWalletIcon(wallet?.icon())}
         >
           INFO
         </MenuButton>
@@ -363,13 +354,9 @@ function Wallet(props: {
           <Link as={ReachLink} to="/settings">
             <MenuItem icon={<Icons.Settings />}>Settings</MenuItem>
           </Link>
-          {props.lib !== undefined ? (
-            <MenuItem icon={<Icons.Wallet />} onClick={onOpen}>
-              Connect Wallet
-            </MenuItem>
-          ) : (
-            <></>
-          )}
+          <MenuItem icon={<Icons.Wallet />} onClick={onOpen}>
+            Connect Wallet
+          </MenuItem>
           {canInstallPWA ? (
             <MenuItem icon={<Icons.Install />} onClick={installPWA}>
               Install
@@ -379,16 +366,7 @@ function Wallet(props: {
           )}
         </MenuList>
       </Menu>
-      {props.lib !== undefined ? (
-        <WalletSelector
-          lib={props.lib}
-          onWalletChange={props.onWalletChange}
-          isOpen={isOpen}
-          onClose={onClose}
-        />
-      ) : (
-        <></>
-      )}
+      <WalletSelector isOpen={isOpen} onClose={onClose} />
     </Box>
   );
 }
