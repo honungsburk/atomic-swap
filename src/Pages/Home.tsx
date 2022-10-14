@@ -15,15 +15,15 @@ import mobileHeroLight from "../assets/img/hero/mobile.jpg";
 import mobileHeroDark from "../assets/img/hero/mobile-dark.jpg";
 import desktopHeroLight from "../assets/img/hero/desktop.jpg";
 import desktopHeroDark from "../assets/img/hero/desktop-dark.jpg";
-import { ChannelState } from "../Network/Channel";
+import * as Store from "src/Store";
 
-export default function Home(props: { channelState: ChannelState }) {
+export default function Home() {
+  const channelState = Store.ChannelState.use((s) => s.channelState);
   const layout: "mobile" | "desktop" | undefined = useBreakpointValue({
     base: "mobile",
     lg: "desktop",
   });
   const mobileHero = useColorModeValue(mobileHeroLight, mobileHeroDark);
-
   const desktopHero = useColorModeValue(desktopHeroLight, desktopHeroDark);
 
   return (
@@ -50,7 +50,7 @@ export default function Home(props: { channelState: ChannelState }) {
             </Text>
             <Link as={ReachLink} to="/session" _hover={{}}>
               <Button colorScheme="primary">
-                {props.channelState === "Connected" ? "REJOIN" : "TRY IT OUT"}
+                {channelState === "Connected" ? "REJOIN" : "TRY IT OUT"}
               </Button>
             </Link>
           </VStack>

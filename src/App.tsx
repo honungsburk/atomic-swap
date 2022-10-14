@@ -15,8 +15,6 @@ import { ChannelState } from "./Network/Channel";
 import * as PWA from "./Hooks/PWA";
 import Loading from "./Pages/Loading";
 
-import * as CardanoSerializationLib from "@emurgo/cardano-serialization-lib-browser";
-
 import Layout from "./Layout";
 
 // Lazy load routes to allow for code splitting.
@@ -41,17 +39,16 @@ function App() {
 
   // ENV
   const wallet = StoreZ.Wallet.use((state) => state.wallet);
+  const [channelState, setChannelState] = StoreZ.ChannelState.use((state) => [
+    state.channelState,
+    state.set,
+  ]);
+  const session = StoreZ.Session.use((state) => state.session);
 
-  const [session, setSession] = React.useState<
-    NetworkSession.Session | undefined
-  >(undefined);
   const [store, setStore] = React.useState<Store | undefined>(undefined);
   const [pendingTx, setPendingTx] = React.useState<
     TransactionEntryV1 | undefined
   >(undefined);
-
-  const [channelState, setChannelState] =
-    React.useState<ChannelState>("Initalized");
 
   // Store
   React.useEffect(() => {
@@ -152,22 +149,19 @@ function App() {
 
   // SESSION
   React.useEffect(() => {
-    const newSession = SessionHolder.mkSession(CardanoSerializationLib);
-    setSession(newSession);
-
-    setChannelState(newSession.getChannelState());
-    newSession.onChannelState((state) => {
+    setChannelState(session.getChannelState());
+    session.onChannelState((state) => {
       setChannelState(state);
     });
 
     const cleanup = () => {
-      newSession.destroy();
+      session.destroy();
     };
     window.addEventListener("beforeunload", cleanup);
     return () => {
       window.removeEventListener("beforeunload", cleanup);
     };
-  }, []);
+  }, [session]);
 
   return (
     <PageErrorBoundary>
@@ -194,7 +188,7 @@ function App() {
               path="/home"
               element={
                 <PageErrorBoundary>
-                  <Home channelState={channelState} />
+                  <Home />
                 </PageErrorBoundary>
               }
             />
@@ -205,7 +199,7 @@ function App() {
                   {displayMode === "standalone" ? (
                     <Trade session={session} store={store} />
                   ) : (
-                    <Home channelState={channelState} />
+                    <Home />
                   )}
                 </PageErrorBoundary>
               }
