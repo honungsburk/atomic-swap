@@ -94,4 +94,13 @@ export namespace ChannelState {
     channelState: "Initalized",
     set: (state) => set({ channelState: state }),
   }));
+
+  Session.use.subscribe((newState) => {
+    // inital value
+    use.setState({ channelState: newState.session.getChannelState() });
+    // Listen to changes
+    newState.session.onChannelState((channelState) =>
+      use.setState({ channelState: channelState })
+    );
+  });
 }

@@ -42,7 +42,6 @@ import { KawaiiMood } from "react-kawaii";
 import OfferReponsePrompt from "./Session/OfferResponsePrompt";
 import AcceptOfferPrompt from "./Session/AcceptOfferPrompt";
 import AssetListHeader from "./Session/AssetListHeader";
-import { ChannelState } from "../Network/Channel";
 import QRCode from "../components/QRCode";
 import WalletConnectButton from "../components/WalletConnectButton";
 import * as colors from "../Theme/colors";
@@ -53,12 +52,10 @@ import { DialogBox } from "../components/DialogBox";
 import * as Cardano from "@emurgo/cardano-serialization-lib-browser";
 import * as StoreZ from "src/Store";
 
-function Session(props: {
-  channelState: ChannelState;
-  session: NetworkSession.Session;
-  store: Store;
-}) {
+function Session(props: { store: Store }) {
   const wallet = StoreZ.Wallet.use((state) => state.wallet);
+  const channelState = StoreZ.ChannelState.use((s) => s.channelState);
+  const session = StoreZ.Session.use((s) => s.session);
 
   const layout: "vertical" | "horizontal" | undefined = useBreakpointValue({
     base: "vertical",
@@ -110,9 +107,9 @@ function Session(props: {
   const [myNetworkID, setMyNetworkID] = React.useState<NetworkID | null>(null);
 
   React.useEffect(() => {
-    setMyNetworkID(props.session.getMyNetworkID());
-    return props.session.onMyNetworkID(setMyNetworkID);
-  }, [props.session]);
+    setMyNetworkID(session.getMyNetworkID());
+    return session.onMyNetworkID(setMyNetworkID);
+  }, [session]);
 
   // Selected Assets
 
@@ -131,10 +128,10 @@ function Session(props: {
         );
         setMySelectedAssets(assets);
       };
-      exec(props.session.getMyValue());
-      return props.session.onMyValue(exec);
+      exec(session.getMyValue());
+      return session.onMyValue(exec);
     }
-  }, [props.session, myNetworkID, availableValue]);
+  }, [session, myNetworkID, availableValue]);
 
   const selectedAssetsUnits: Set<string> = new Set();
   mySelectedAssets.forEach((asset) =>
@@ -146,22 +143,22 @@ function Session(props: {
   const [myLock, setMyLock] = React.useState<boolean>(false);
 
   React.useEffect(() => {
-    if (props.session !== undefined) {
-      setMyLock(props.session.getMyLock());
-      return props.session.onMyLock(setMyLock);
+    if (session !== undefined) {
+      setMyLock(session.getMyLock());
+      return session.onMyLock(setMyLock);
     }
-  }, [props.session]);
+  }, [session]);
 
   // Address
 
   const [myAddress, setMyAddress] = React.useState<Address | null>(null);
 
   React.useEffect(() => {
-    setMyAddress(props.session.getMyAddress());
-    return props.session.onMyAddress((addr) => {
+    setMyAddress(session.getMyAddress());
+    return session.onMyAddress((addr) => {
       setMyAddress(addr);
     });
-  }, [props.session]);
+  }, [session]);
 
   /////////////// Their State
 
@@ -172,9 +169,9 @@ function Session(props: {
   );
 
   React.useEffect(() => {
-    setTheirNetworkID(props.session.getTheirNetworkID());
-    return props.session.onTheirNetworkID(setTheirNetworkID);
-  }, [props.session]);
+    setTheirNetworkID(session.getTheirNetworkID());
+    return session.onTheirNetworkID(setTheirNetworkID);
+  }, [session]);
 
   // Selected Assets
 
@@ -192,28 +189,28 @@ function Session(props: {
         );
         setTheirSelectedAssets(assets);
       };
-      exec(props.session.getTheirValue());
-      return props.session.onTheirValue(exec);
+      exec(session.getTheirValue());
+      return session.onTheirValue(exec);
     }
-  }, [props.session, theirNetworkID]);
+  }, [session, theirNetworkID]);
 
   // Lock
 
   const [theirLock, setTheirLock] = React.useState<boolean>(false);
 
   React.useEffect(() => {
-    setTheirLock(props.session.getTheirLock());
-    return props.session.onTheirLock(setTheirLock);
-  }, [props.session]);
+    setTheirLock(session.getTheirLock());
+    return session.onTheirLock(setTheirLock);
+  }, [session]);
 
   // Address
 
   const [theirAddress, setTheirAddress] = React.useState<Address | null>(null);
 
   React.useEffect(() => {
-    setTheirAddress(props.session.getTheirAddress());
-    return props.session.onTheirAddress(setTheirAddress);
-  }, [props.session]);
+    setTheirAddress(session.getTheirAddress());
+    return session.onTheirAddress(setTheirAddress);
+  }, [session]);
 
   ////////////////////////////////////////////////////////////////////////////////
   // Offer
@@ -224,10 +221,9 @@ function Session(props: {
   );
 
   React.useEffect(() => {
-    if (props.session !== undefined) {
-      const session = props.session;
-      setOffer(props.session.getOffer());
-      return props.session.onOffer((offer) => {
+    if (session !== undefined) {
+      setOffer(session.getOffer());
+      return session.onOffer((offer) => {
         setOffer(offer);
         if (offer?.kind === "OfferAccept") {
           toast({
@@ -248,7 +244,7 @@ function Session(props: {
         }
       });
     }
-  }, [props.session, props.store, myNetworkID]);
+  }, [session, props.store, myNetworkID]);
 
   ////////////////////////////////////////////////////////////////////////////////
   // MissMatch!
@@ -261,13 +257,13 @@ function Session(props: {
 
   React.useEffect(() => {
     const errors: NetworkSession.TradeMissMatch[] =
-      props.session.getMissMatchErrors();
+      session.getMissMatchErrors();
     if (errors.length > 0) {
       setMyTradeMatchTheirs(errors[0]);
     } else {
       setMyTradeMatchTheirs(undefined);
     }
-    return props.session.onMissMatchErrors(
+    return session.onMissMatchErrors(
       (errors: NetworkSession.TradeMissMatch[]) => {
         if (errors.length > 0) {
           setMyTradeMatchTheirs(errors[0]);
@@ -276,7 +272,7 @@ function Session(props: {
         }
       }
     );
-  }, [props.session]);
+  }, [session]);
 
   const getUrl = window.location;
 
@@ -287,25 +283,23 @@ function Session(props: {
     myAddress: myAddress,
     theirAddress: theirAddress,
     hasWallet: wallet !== undefined,
-    channelState: props.channelState,
-    link: `${getUrl.protocol}//${getUrl.host}/session/${props.session.getID()}`,
+    link: `${getUrl.protocol}//${getUrl.host}/session/${session.getID()}`,
     myNetworkID: myNetworkID,
     iAmLocked: myLock,
     theirLock: theirLock,
     commission: commission,
     onAdaChange: (ada) => {
-      props.session.updateMyADA(ada);
+      session.updateMyADA(ada);
     },
     availableAssets: availableAssets.filter(
       (asset) => !selectedAssetsUnits.has(CardanoAsset.makeID(asset))
     ),
     mySelectedAssets: mySelectedAssets,
     updateNativeAsset: (hash, assetName, amount) => {
-      props.session.addMyAsset(hash, assetName, amount);
+      session.addMyAsset(hash, assetName, amount);
     },
     tradeMissMatch: myLock ? myTradeMatchTheirs : undefined,
     offer: offer,
-    session: props.session,
     theirNetworkID: theirNetworkID,
     theirSelectedAssets: theirSelectedAssets,
   };
@@ -323,7 +317,6 @@ type LayoutProps = {
   theirAddress: Address | null;
   hasWallet: boolean;
   link: string;
-  channelState: ChannelState;
   myNetworkID: NetworkID | null;
   iAmLocked: boolean;
   theirLock: boolean;
@@ -339,7 +332,6 @@ type LayoutProps = {
 
   tradeMissMatch: NetworkSession.TradeMissMatch | undefined;
   offer: NetworkSession.Offer | undefined;
-  session: NetworkSession.Session;
 
   theirNetworkID: NetworkID | null;
   theirSelectedAssets: CardanoAsset.Asset[];
@@ -370,7 +362,6 @@ function HorizontalLayout(props: LayoutProps) {
           isTesting={props.isTesting}
           myLock={props.iAmLocked}
           theirLock={props.theirLock}
-          session={props.session}
           offer={props.offer}
           missMatchError={props.tradeMissMatch}
         />
@@ -381,7 +372,6 @@ function HorizontalLayout(props: LayoutProps) {
         isTesting={props.isTesting}
         address={props.theirAddress}
         link={props.link}
-        channelState={props.channelState}
         networkID={props.theirNetworkID}
         commission={props.commission}
         theirSelectedAssets={props.theirSelectedAssets}
@@ -409,7 +399,6 @@ function VerticalLayout(props: LayoutProps) {
         isLocked={props.iAmLocked}
         isTesting={props.isTesting}
         address={props.theirAddress}
-        channelState={props.channelState}
         link={props.link}
         networkID={props.theirNetworkID}
         commission={props.commission}
@@ -422,7 +411,6 @@ function VerticalLayout(props: LayoutProps) {
             props.mySelectedAssets.length + props.theirSelectedAssets.length
           }
           isTesting={props.isTesting}
-          session={props.session}
           myLock={props.iAmLocked}
           theirLock={props.theirLock}
           offer={props.offer}
@@ -575,10 +563,10 @@ function SessionController(props: {
   offer: NetworkSession.Offer | undefined;
   myLock: boolean;
   theirLock: boolean;
-  session: NetworkSession.Session;
   missMatchError: NetworkSession.TradeMissMatch | undefined;
 }) {
   const wallet = StoreZ.Wallet.use((state) => state.wallet);
+  const session = StoreZ.Session.use((state) => state.session);
   const toast = useToast();
   let component = <></>;
 
@@ -596,19 +584,19 @@ function SessionController(props: {
         isMatching={props.missMatchError === undefined && !props.isTesting}
         isLocked={props.myLock}
         theyAreLocked={props.theirLock}
-        onLock={() => props.session.updateMyLock(true)}
-        onUnlock={() => props.session.updateMyLock(false)}
+        onLock={() => session.updateMyLock(true)}
+        onUnlock={() => session.updateMyLock(false)}
         onSign={async () => {
-          const offer = buildOffer(props.session);
+          const offer = buildOffer(session);
           if (offer !== undefined) {
             try {
               const witnessSet = await TxBuilder.signTx(Cardano)(
                 wallet,
                 offer[0],
                 offer[1],
-                props.session.getNegotiatedTTL()
+                session.getNegotiatedTTL()
               );
-              props.session.createOffer(witnessSet);
+              session.createOffer(witnessSet);
             } catch (err: any) {
               toastOnTxFail(err, toast);
             }
@@ -631,9 +619,9 @@ function SessionController(props: {
     const witness = props.offer.witness;
     component = (
       <AcceptOfferPrompt
-        onReject={() => props.session.rejectOffer()}
+        onReject={() => session.rejectOffer()}
         onSign={async () => {
-          const offer = buildOffer(props.session);
+          const offer = buildOffer(session);
           if (offer !== undefined) {
             try {
               const txID = await TxBuilder.makeTx(Cardano)(
@@ -641,9 +629,9 @@ function SessionController(props: {
                 offer[0],
                 offer[1],
                 witness,
-                props.session.getNegotiatedTTL()
+                session.getNegotiatedTTL()
               );
-              props.session.acceptOffer(txID);
+              session.acceptOffer(txID);
             } catch (err: any) {
               toastOnTxFail(err, toast);
             }
@@ -655,14 +643,14 @@ function SessionController(props: {
     component = (
       <OfferReponsePrompt
         reponse={"Accepted"}
-        onReset={() => props.session.resetOffer()}
+        onReset={() => session.resetOffer()}
       ></OfferReponsePrompt>
     );
   } else if (props.offer.kind === "OfferReject") {
     component = (
       <OfferReponsePrompt
         reponse={"Rejected"}
-        onReset={() => props.session.resetOffer()}
+        onReset={() => session.resetOffer()}
       ></OfferReponsePrompt>
     );
   }
@@ -683,8 +671,7 @@ function SessionController(props: {
       ) : (
         <></>
       )}
-      {props.missMatchError &&
-      props.session.getChannelState() === "Connected" ? (
+      {props.missMatchError && session.getChannelState() === "Connected" ? (
         <DialogBox
           icon={<Icons.Error />}
           headerText="Trade Missmatch"
@@ -726,13 +713,13 @@ function TheirSide(props: {
   isLocked: boolean;
   isTesting: boolean;
   address: Address | null;
-  channelState: ChannelState;
   link: string;
   theirSelectedAssets: CardanoAsset.Asset[];
   networkID: NetworkID | null;
   commission: BigNum;
 }) {
-  if (props.channelState !== "Connected") {
+  const channelState = StoreZ.ChannelState.use((state) => state.channelState);
+  if (channelState !== "Connected") {
     return <ThereIsNoOneHere link={props.link} />;
   } else {
     return (

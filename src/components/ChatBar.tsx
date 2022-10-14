@@ -6,18 +6,16 @@ import {
   Box,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { Session } from "../Network/Session";
 import VoiceChat from "./VoiceChat";
 import * as TextChat from "./TextChat";
 import React from "react";
 import * as Text from "../Network/TextChannel";
 import SessionHolder from "../Network/SessionHolder";
 import { VariableSizeList } from "react-window";
+import * as Store from "src/Store";
 
-export default function ChatBar(props: {
-  session: Session;
-  size: "sm" | "md";
-}) {
+export default function ChatBar(props: { size: "sm" | "md" }) {
+  const session = Store.Session.use((s) => s.session);
   const [textMessage, setTextMessage] = React.useState("");
   const [chatIsOpen, setChatIsOpen] = React.useState(false);
   const [messages, setMessages] = React.useState<Text.Message[]>([]);
@@ -52,10 +50,8 @@ export default function ChatBar(props: {
     const newTextChannel = SessionHolder.mkTextChannel();
     setMessages(newTextChannel.getMessages());
     const clean1 = newTextChannel.onMessage(setMessages);
-    const clean2 = newTextChannel.onGotID((id) =>
-      props.session.sendMyTextChatID(id)
-    );
-    const clean3 = props.session.onTheirTextChatID((id) => {
+    const clean2 = newTextChannel.onGotID((id) => session.sendMyTextChatID(id));
+    const clean3 = session.onTheirTextChatID((id) => {
       if (!newTextChannel.isConnected()) {
         newTextChannel.connect(id);
       }
@@ -63,7 +59,7 @@ export default function ChatBar(props: {
 
     const id = newTextChannel.getID();
     if (id !== null) {
-      props.session.sendMyTextChatID(id);
+      session.sendMyTextChatID(id);
     }
     setTextChannel(newTextChannel);
 
@@ -73,11 +69,11 @@ export default function ChatBar(props: {
       clean3();
       newTextChannel.disconnect();
     };
-  }, [props.session]);
+  }, [session]);
 
   // This weird inversion is done so that when we remove the voice chat buttons
   // when the user is writting a message we do NOT remove the on call dialog
-  const [voiceChatButtons, answer] = VoiceChat({ session: props.session });
+  const [voiceChatButtons, answer] = VoiceChat({ session: session });
 
   let width = 300;
   let px = 4;

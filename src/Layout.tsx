@@ -46,19 +46,14 @@ import { usePWAInstall } from "./Hooks/PWA";
 import * as CardanoSerializationLib from "@emurgo/cardano-serialization-lib-browser";
 import * as Store from "src/Store";
 
-export default function Layout(props: {
-  session?: NetworkSession.Session;
-  lib?: typeof CardanoSerializationLib;
-}) {
-  const [channelState, setChannelState] =
-    React.useState<ChannelState>("Initalized");
-
-  const [isHealthy, setIsHealth] = React.useState<boolean>(true);
+export default function Layout() {
   const layout: "vertical" | "horizontal" | undefined = useBreakpointValue({
     base: "vertical",
     sm: "horizontal",
   });
-
+  const [isHealthy, setIsHealth] = React.useState<boolean>(true);
+  const channelState = Store.ChannelState.use((s) => s.channelState);
+  const session = Store.Session.use((s) => s.session);
   const wallet = Store.Wallet.use((state) => state.wallet);
 
   const checkHealth = async () => {
@@ -85,24 +80,14 @@ export default function Layout(props: {
     checkHealth();
   }, [wallet]);
 
-  React.useEffect(() => {
-    if (props.session !== undefined) {
-      setChannelState(props.session.getChannelState());
-      props.session.onChannelState(setChannelState);
-    }
-  }, [props.session]);
-
   let chatbar = <></>;
 
-  if (channelState === "Connected" && props.session !== undefined) {
+  if (channelState === "Connected" && session !== undefined) {
     if (layout === "horizontal") {
       chatbar = (
         <Box pos="fixed" bottom="4" right="8" zIndex={1}>
           <ComponentErrorBoundary>
-            <ChatBar
-              size={"md"}
-              session={props.session as NetworkSession.Session}
-            ></ChatBar>
+            <ChatBar size={"md"}></ChatBar>
           </ComponentErrorBoundary>
         </Box>
       );
@@ -110,10 +95,7 @@ export default function Layout(props: {
       chatbar = (
         <Center pos="fixed" zIndex={1} width={"100%"} bottom="4">
           <ComponentErrorBoundary>
-            <ChatBar
-              size={"sm"}
-              session={props.session as NetworkSession.Session}
-            ></ChatBar>
+            <ChatBar size={"sm"}></ChatBar>
           </ComponentErrorBoundary>
         </Center>
       );
@@ -125,11 +107,7 @@ export default function Layout(props: {
       <VStack w="full">
         {isHealthy ? <></> : <BackendIsDown />}
         <Box w="full">
-          <Header
-            session={props.session}
-            channelState={channelState}
-            lib={props.lib}
-          />
+          <Header channelState={channelState} />
         </Box>
       </VStack>
       <Outlet />

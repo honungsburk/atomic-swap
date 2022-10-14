@@ -167,12 +167,12 @@ function App() {
     <PageErrorBoundary>
       <Suspense fallback={<Loading />}>
         <Routes>
-          <Route path="/" element={<Layout session={session} />}>
+          <Route path="/" element={<Layout />}>
             <Route
               path="/session/:theirID"
               element={
                 <PageErrorBoundary>
-                  <Trade session={session} store={store} />
+                  <Trade store={store} />
                 </PageErrorBoundary>
               }
             />
@@ -180,7 +180,7 @@ function App() {
               path="/session/"
               element={
                 <PageErrorBoundary>
-                  <Trade session={session} store={store} />
+                  <Trade store={store} />
                 </PageErrorBoundary>
               }
             />
@@ -197,7 +197,7 @@ function App() {
               element={
                 <PageErrorBoundary>
                   {displayMode === "standalone" ? (
-                    <Trade session={session} store={store} />
+                    <Trade store={store} />
                   ) : (
                     <Home />
                   )}
