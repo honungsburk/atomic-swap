@@ -545,7 +545,7 @@ export class Session {
   // TTL
   ////////////////////////////////////////////////////////////////////////////////
 
-  getNegotiatedTTL(): number {
+  getNegotiatedTTL() {
     return TTLBound.maxTTL(
       this.fullState.myOffer.ttl,
       this.fullState.theirOffer.ttl

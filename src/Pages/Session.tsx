@@ -234,12 +234,18 @@ function Session(props: { store: Store }) {
             isClosable: true,
           });
           navigate("../success", { replace: true });
-          if (props.store !== undefined && myNetworkID !== null) {
-            props.store.setPendingTx(
-              offer.txID,
-              session.getNegotiatedTTL(),
-              myNetworkID
-            );
+          const ttlRes = session.getNegotiatedTTL();
+          if (ttlRes.err) {
+            toast({
+              title: ttlRes.val.title,
+              description: ttlRes.val.details,
+              status: "error",
+              duration: 9000,
+              isClosable: true,
+            });
+          }
+          if (props.store !== undefined && myNetworkID !== null && ttlRes.ok) {
+            props.store.setPendingTx(offer.txID, ttlRes.val, myNetworkID);
           }
         }
       });
@@ -587,17 +593,29 @@ function SessionController(props: {
         onLock={() => session.updateMyLock(true)}
         onUnlock={() => session.updateMyLock(false)}
         onSign={async () => {
+          const ttlRes = session.getNegotiatedTTL();
+          if (ttlRes.err) {
+            toast({
+              title: ttlRes.val.title,
+              description: ttlRes.val.details,
+              status: "error",
+              duration: 9000,
+              isClosable: true,
+            });
+          }
+
           const offer = buildOffer(session);
-          if (offer !== undefined) {
+          if (offer !== undefined && ttlRes.ok) {
             try {
               const witnessSet = await TxBuilder.signTx(Cardano)(
                 wallet,
                 offer[0],
                 offer[1],
-                session.getNegotiatedTTL()
+                ttlRes.val
               );
               session.createOffer(witnessSet);
             } catch (err: any) {
+              console.log(err);
               toastOnTxFail(err, toast);
             }
           }
@@ -621,15 +639,26 @@ function SessionController(props: {
       <AcceptOfferPrompt
         onReject={() => session.rejectOffer()}
         onSign={async () => {
+          const ttlRes = session.getNegotiatedTTL();
+          if (ttlRes.err) {
+            toast({
+              title: ttlRes.val.title,
+              description: ttlRes.val.details,
+              status: "error",
+              duration: 9000,
+              isClosable: true,
+            });
+          }
+
           const offer = buildOffer(session);
-          if (offer !== undefined) {
+          if (offer !== undefined && ttlRes.ok) {
             try {
               const txID = await TxBuilder.makeTx(Cardano)(
                 wallet,
                 offer[0],
                 offer[1],
                 witness,
-                session.getNegotiatedTTL()
+                ttlRes.val
               );
               session.acceptOffer(txID);
             } catch (err: any) {

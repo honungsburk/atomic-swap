@@ -1,3 +1,5 @@
+import { Ok, Err, Result } from "ts-results";
+
 export type TTLBound = { low: number; high: number };
 
 export function initTTL(): TTLBound {
@@ -8,9 +10,15 @@ export function copy(ttlBound: TTLBound): TTLBound {
   return { low: ttlBound.low, high: ttlBound.high };
 }
 
-export function maxTTL(x: TTLBound, y: TTLBound): number {
+export function maxTTL(
+  x: TTLBound,
+  y: TTLBound
+): Result<number, { title: "Out of bounds"; details: string }> {
   if (x.high >= y.low && y.high >= x.low) {
-    return Math.min(x.high, y.high);
+    return Ok(Math.min(x.high, y.high));
   }
-  throw Error("TTL out of bounds");
+  return Err({
+    title: "Out of bounds",
+    details: `No overlap between [${x.low}, ${x.high}] and [${y.low}, ${y.high}]`,
+  });
 }

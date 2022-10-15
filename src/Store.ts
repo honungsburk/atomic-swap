@@ -5,7 +5,9 @@ import * as Channel from "src/Network/Channel";
 import * as ChannelPeerJS from "src/Network/ChannelPeerJS";
 import * as P2PSession from "src/Network/Session";
 import * as CardanoSerializationLib from "@emurgo/cardano-serialization-lib-browser";
+import * as TxBuilder from "src/Cardano/TxBuilder";
 
+// Wallet
 export namespace Wallet {
   /**
    *
@@ -37,6 +39,7 @@ export namespace Wallet {
   }));
 }
 
+// Session
 export namespace Session {
   type State = {
     session: P2PSession.Session;
@@ -55,35 +58,25 @@ export namespace Session {
     },
   }));
 
-  // React.useEffect(() => {
-  //   const update = async () => {
-  //     if (wallet !== undefined && session !== undefined) {
-  //       const networkID = await wallet.getNetworkId();
-  //       session.updateMyNetworkID(networkID);
+  Wallet.use.subscribe(async (state) => {
+    if (state.wallet) {
+      const session = use.getState().session;
+      const networkID = await state.wallet.getNetworkId();
+      session.updateMyNetworkID(networkID);
 
-  //       const myAddress = await wallet.getChangeAddress();
-  //       session.updateMyAddress(myAddress.to_address());
+      const myAddress = await state.wallet.getChangeAddress();
+      session.updateMyAddress(myAddress.to_address());
 
-  //       const utxos = await wallet.getUtxos();
-  //       session.updateMyUTxOs(utxos);
-  //     }
-  //   };
-  //   update();
-  // }, [wallet, session]);
+      const utxos = await state.wallet.getUtxos();
+      session.updateMyUTxOs(utxos);
 
-  // // TTL Bound Update
-  // React.useEffect(() => {
-  //   const update = async () => {
-  //     if (wallet !== undefined && session !== undefined) {
-  //       const networkID = await wallet.getNetworkId();
-  //       const ttlBound = await TxBuilder.createTTLBound(networkID);
-  //       session.updateMyTTLBound(ttlBound);
-  //     }
-  //   };
-  //   update();
-  // }, [wallet, session]);
+      const ttlBound = await TxBuilder.createTTLBound(networkID);
+      session.updateMyTTLBound(ttlBound);
+    }
+  });
 }
 
+// ChannelState
 export namespace ChannelState {
   type State = {
     channelState: Channel.ChannelState;

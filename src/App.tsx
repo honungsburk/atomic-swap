@@ -38,7 +38,6 @@ function App() {
   const displayMode = PWA.getPWADisplayMode();
 
   // ENV
-  const wallet = StoreZ.Wallet.use((state) => state.wallet);
   const [channelState, setChannelState] = StoreZ.ChannelState.use((state) => [
     state.channelState,
     state.set,
@@ -95,34 +94,6 @@ function App() {
 
   // Check if the previous transaction was found on the blockchain
   useInterval(hasBeenAddedToBlockChain, 30000);
-
-  React.useEffect(() => {
-    const update = async () => {
-      if (wallet !== undefined && session !== undefined) {
-        const networkID = await wallet.getNetworkId();
-        session.updateMyNetworkID(networkID);
-
-        const myAddress = await wallet.getChangeAddress();
-        session.updateMyAddress(myAddress.to_address());
-
-        const utxos = await wallet.getUtxos();
-        session.updateMyUTxOs(utxos);
-      }
-    };
-    update();
-  }, [wallet, session]);
-
-  // TTL Bound Update
-  React.useEffect(() => {
-    const update = async () => {
-      if (wallet !== undefined && session !== undefined) {
-        const networkID = await wallet.getNetworkId();
-        const ttlBound = await TxBuilder.createTTLBound(networkID);
-        session.updateMyTTLBound(ttlBound);
-      }
-    };
-    update();
-  }, [wallet, session]);
 
   // TOAST
   React.useEffect(() => {

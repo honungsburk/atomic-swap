@@ -8,7 +8,7 @@ test("TTLBound.maxTTL - find the max bound", () => {
   bound1.low = 10;
   bound2.high = 90;
   bound2.low = 80;
-  expect(TTLBound.maxTTL(bound1, bound2)).toBe(90);
+  expect(TTLBound.maxTTL(bound1, bound2).val).toBe(90);
 });
 
 test("TTLBound.maxTTL - find edge", () => {
@@ -18,7 +18,7 @@ test("TTLBound.maxTTL - find edge", () => {
   bound1.low = 10;
   bound2.high = 120;
   bound2.low = 100;
-  expect(TTLBound.maxTTL(bound1, bound2)).toBe(100);
+  expect(TTLBound.maxTTL(bound1, bound2).val).toBe(100);
 });
 
 test("TTLBound.maxTTL - find the max bound", () => {
@@ -28,5 +28,5 @@ test("TTLBound.maxTTL - find the max bound", () => {
   bound1.low = 10;
   bound2.high = 120;
   bound2.low = 101;
-  expect(() => TTLBound.maxTTL(bound1, bound2)).toThrow();
+  expect(() => TTLBound.maxTTL(bound1, bound2).val).toBe("Out of bounds");
 });
