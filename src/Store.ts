@@ -54,22 +54,6 @@ export namespace ChannelState {
     channelState: "Initalized",
     set: (state) => set({ channelState: state }),
   }));
-
-  // Session.use.getState().session.onChannelState((channelState) => {
-  //   console.log("new channel state");
-  //   use.setState({ channelState: channelState });
-  // });
-
-  // Session.use.subscribe((newSession) => {
-  //   console.log("new session");
-  //   // inital value
-  //   use.setState({ channelState: newSession.session.getChannelState() });
-  //   // Listen to changes
-  //   newSession.session.onChannelState((channelState) => {
-  //     console.log("new channel state");
-  //     use.setState({ channelState: channelState });
-  //   });
-  // });
 }
 
 // Session
