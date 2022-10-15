@@ -2,12 +2,9 @@ import React, { Suspense, lazy } from "react";
 import { Route, Routes } from "react-router-dom";
 import * as StoreZ from "src/Store";
 
-import { useInterval, useToast } from "@chakra-ui/react";
+import { useToast } from "@chakra-ui/react";
 import PageErrorBoundary from "./components/ErrorBoundary/PageErrorBoundary";
 
-import Store, { TransactionEntryV1 } from "./Storage/Store";
-import BlockFrostAPI from "./API/BlockFrost/BlockFrostAPI";
-import * as Types from "./API/BlockFrost/Types";
 import { ChannelState } from "./Network/Channel";
 import * as PWA from "./Hooks/PWA";
 import Loading from "./Pages/Loading";
@@ -35,59 +32,7 @@ function App() {
   const displayMode = PWA.getPWADisplayMode();
 
   // ENV
-  const setChannelState = StoreZ.ChannelState.use((state) => state.set);
   const session = StoreZ.Session.use((state) => state.session);
-
-  const [store, setStore] = React.useState<Store | undefined>(undefined);
-  const [pendingTx, setPendingTx] = React.useState<
-    TransactionEntryV1 | undefined
-  >(undefined);
-
-  // Store
-  React.useEffect(() => {
-    const newStore = Store.create();
-    setStore(newStore);
-    setPendingTx(newStore.getPendingTx());
-    newStore.on("TransactionEntry", setPendingTx);
-  }, []);
-
-  // pendingTx
-  const wipePendingTx = () => {
-    if (store !== undefined) {
-      store.deletePendingTx();
-      window.location.reload();
-    }
-  };
-
-  const hasBeenAddedToBlockChain = async () => {
-    if (pendingTx !== undefined) {
-      const API = new BlockFrostAPI(pendingTx.networkID);
-      const result = await API.txs(pendingTx.txHash);
-      if (Types.isTransaction(result)) {
-        wipePendingTx();
-      }
-    }
-  };
-
-  // Check if the time to live has run out
-  React.useEffect(() => {
-    const exec = async () => {
-      if (pendingTx !== undefined) {
-        hasBeenAddedToBlockChain();
-        const API = new BlockFrostAPI(pendingTx.networkID);
-        const latestBlock = await API.blocksLatest();
-        if (Types.isBlock(latestBlock)) {
-          if (latestBlock.slot > pendingTx.ttl) {
-            wipePendingTx();
-          }
-        }
-      }
-    };
-    exec();
-  }, [pendingTx]);
-
-  // Check if the previous transaction was found on the blockchain
-  useInterval(hasBeenAddedToBlockChain, 30000);
 
   // TOAST
   React.useEffect(() => {
@@ -112,22 +57,6 @@ function App() {
     }
   }, [toast, session]);
 
-  // SESSION
-  React.useEffect(() => {
-    setChannelState(session.getChannelState());
-    session.onChannelState((state) => {
-      setChannelState(state);
-    });
-
-    const cleanup = () => {
-      session.destroy();
-    };
-    window.addEventListener("beforeunload", cleanup);
-    return () => {
-      window.removeEventListener("beforeunload", cleanup);
-    };
-  }, [session]);
-
   return (
     <PageErrorBoundary>
       <Suspense fallback={<Loading />}>
@@ -137,7 +66,7 @@ function App() {
               path="/session/:theirID"
               element={
                 <PageErrorBoundary>
-                  <Trade store={store} />
+                  <Trade />
                 </PageErrorBoundary>
               }
             />
@@ -145,7 +74,7 @@ function App() {
               path="/session/"
               element={
                 <PageErrorBoundary>
-                  <Trade store={store} />
+                  <Trade />
                 </PageErrorBoundary>
               }
             />
@@ -161,11 +90,7 @@ function App() {
               path="/"
               element={
                 <PageErrorBoundary>
-                  {displayMode === "standalone" ? (
-                    <Trade store={store} />
-                  ) : (
-                    <Home />
-                  )}
+                  {displayMode === "standalone" ? <Trade /> : <Home />}
                 </PageErrorBoundary>
               }
             />

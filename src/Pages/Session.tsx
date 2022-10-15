@@ -34,7 +34,6 @@ import * as ValueExtra from "../Cardano/ValueExtra";
 import * as BigNumExtra from "../Cardano/BigNumExtra";
 import Header from "../components/Header";
 import { useNavigate } from "react-router-dom";
-import Store from "../Storage/Store";
 import LockAndSign from "./Session/LockAndSign";
 import { SelectedAsset } from "./Session/Types";
 import AssetList from "./Session/AssetList";
@@ -52,7 +51,7 @@ import { DialogBox } from "../components/DialogBox";
 import * as Cardano from "@emurgo/cardano-serialization-lib-browser";
 import * as StoreZ from "src/Store";
 
-function Session(props: { store: Store }) {
+function Session() {
   const wallet = StoreZ.Wallet.use((state) => state.wallet);
   const session = StoreZ.Session.use((s) => s.session);
 
@@ -219,6 +218,8 @@ function Session(props: { store: Store }) {
     undefined
   );
 
+  const addPendingTx = StoreZ.PendingTransaction.use((s) => s.add);
+
   React.useEffect(() => {
     if (session !== undefined) {
       setOffer(session.getOffer());
@@ -243,13 +244,17 @@ function Session(props: { store: Store }) {
               isClosable: true,
             });
           }
-          if (props.store !== undefined && myNetworkID !== null && ttlRes.ok) {
-            props.store.setPendingTx(offer.txID, ttlRes.val, myNetworkID);
+          if (myNetworkID !== null && ttlRes.ok) {
+            addPendingTx({
+              txHash: offer.txID,
+              ttl: ttlRes.val,
+              networkID: myNetworkID,
+            });
           }
         }
       });
     }
-  }, [session, props.store, myNetworkID]);
+  }, [session, myNetworkID]);
 
   ////////////////////////////////////////////////////////////////////////////////
   // MissMatch!

@@ -8,7 +8,9 @@ import * as CardanoSerializationLib from "@emurgo/cardano-serialization-lib-brow
 import * as TxBuilder from "src/Cardano/TxBuilder";
 import { persist } from "zustand/middleware";
 import * as Util from "src/Util";
-
+import { NetworkID } from "cardano-web-bridge-wrapper";
+import BlockFrostAPI from "./API/BlockFrost/BlockFrostAPI";
+import * as BlockFrostTypes from "./API/BlockFrost/Types";
 // Wallet
 export namespace Wallet {
   /**
@@ -145,4 +147,76 @@ export namespace Volume {
   );
 }
 
-// Last Transaction
+// Pending Transaction
+
+export namespace PendingTransaction {
+  type TX = {
+    txHash: string;
+    ttl: number;
+    networkID: NetworkID;
+  };
+
+  type State = {
+    pendingTransactions: TX[];
+    add: (tx: TX) => void;
+    resolve: () => Promise<void>;
+  };
+
+  export const use = create(
+    persist<State>(
+      (set, get) => ({
+        pendingTransactions: [],
+        add: (pendingTx: TX) => {
+          set({
+            pendingTransactions: [pendingTx, ...get().pendingTransactions],
+          });
+        },
+
+        // Remove all transactions that we know can no longer interfere.
+        resolve: async () => {
+          const notResolved = [];
+          for (const pendingTx of get().pendingTransactions) {
+            const API = new BlockFrostAPI(pendingTx.networkID);
+            const result = await API.txs(pendingTx.txHash);
+            // If we can't find it we can not remove it.
+            if (!BlockFrostTypes.isTransaction(result)) {
+              notResolved.push(pendingTx);
+            } else {
+              const latestBlock = await API.blocksLatest();
+              if (
+                !(
+                  BlockFrostTypes.isBlock(latestBlock) &&
+                  latestBlock.slot > pendingTx.ttl
+                )
+              ) {
+                notResolved.push(pendingTx);
+              }
+            }
+          }
+
+          set({ pendingTransactions: notResolved });
+        },
+      }),
+      {
+        name: "zus-volume", // unique name
+        getStorage: () => localStorage, // (optional) by default, 'localStorage' is used
+      }
+    )
+  );
+
+  //Check the pending transactions every 30 seconds
+  use.getState().resolve();
+  let intervalID: NodeJS.Timer | undefined = undefined;
+  use.subscribe((s) => {
+    const hasLength = s.pendingTransactions.length > 0;
+    if (intervalID && !hasLength) {
+      clearInterval(intervalID);
+    }
+
+    if (intervalID === undefined && hasLength) {
+      intervalID = setInterval(() => {
+        s.resolve();
+      }, 30000);
+    }
+  });
+}
