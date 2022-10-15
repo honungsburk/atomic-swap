@@ -1,8 +1,6 @@
 import React, { Suspense, lazy } from "react";
 import { Route, Routes } from "react-router-dom";
 import * as StoreZ from "src/Store";
-import SessionHolder from "./Network/SessionHolder";
-import * as NetworkSession from "./Network/Session";
 
 import { useInterval, useToast } from "@chakra-ui/react";
 import PageErrorBoundary from "./components/ErrorBoundary/PageErrorBoundary";
@@ -10,7 +8,6 @@ import PageErrorBoundary from "./components/ErrorBoundary/PageErrorBoundary";
 import Store, { TransactionEntryV1 } from "./Storage/Store";
 import BlockFrostAPI from "./API/BlockFrost/BlockFrostAPI";
 import * as Types from "./API/BlockFrost/Types";
-import * as TxBuilder from "./Cardano/TxBuilder";
 import { ChannelState } from "./Network/Channel";
 import * as PWA from "./Hooks/PWA";
 import Loading from "./Pages/Loading";
@@ -38,10 +35,7 @@ function App() {
   const displayMode = PWA.getPWADisplayMode();
 
   // ENV
-  const [channelState, setChannelState] = StoreZ.ChannelState.use((state) => [
-    state.channelState,
-    state.set,
-  ]);
+  const setChannelState = StoreZ.ChannelState.use((state) => state.set);
   const session = StoreZ.Session.use((state) => state.session);
 
   const [store, setStore] = React.useState<Store | undefined>(undefined);

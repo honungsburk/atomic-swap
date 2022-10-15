@@ -54,7 +54,6 @@ import * as StoreZ from "src/Store";
 
 function Session(props: { store: Store }) {
   const wallet = StoreZ.Wallet.use((state) => state.wallet);
-  const channelState = StoreZ.ChannelState.use((s) => s.channelState);
   const session = StoreZ.Session.use((s) => s.session);
 
   const layout: "vertical" | "horizontal" | undefined = useBreakpointValue({

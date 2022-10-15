@@ -1,6 +1,5 @@
 import { NetworkID } from "cardano-web-bridge-wrapper";
 import Observable from "../Util/Behavior/Observable";
-import * as MathUtil from "../Util/Math";
 
 export type TransactionEntryV1 = {
   txHash: string;
@@ -15,15 +14,6 @@ function isTransactionEntryV1(x: any): x is TransactionEntryV1 {
     typeof x.ttl === "number" &&
     typeof x.timestamp === "number"
   );
-}
-
-export type VolumeV1 = {
-  volume: number;
-  timestamp: number;
-};
-
-function isVolumeV1(x: any): x is VolumeV1 {
-  return typeof x.volume === "number" && typeof x.timestamp === "number";
 }
 
 /**
@@ -93,32 +83,6 @@ class Store {
     return this.observable.addObserver(fn);
   }
 
-  ////////////////////////////////////////////////////////////////////////////////
-  // Volume
-  ////////////////////////////////////////////////////////////////////////////////
-
-  private volumeKey = "chatVolume";
-
-  getVolume(): VolumeV1 | undefined {
-    const volumeS: string | null = this.store.getItem(this.volumeKey);
-    if (volumeS !== null) {
-      const mtxEntry = JSON.parse(volumeS);
-      if (isVolumeV1(mtxEntry)) {
-        return mtxEntry;
-      } else {
-        this.store.removeItem(this.volumeKey);
-      }
-    }
-    return undefined;
-  }
-
-  setVolume(volume: number): void {
-    const txEntry: VolumeV1 = {
-      volume: MathUtil.clamp(volume, 0, 100),
-      timestamp: new Date().getMilliseconds(),
-    };
-    this.store.setItem(this.volumeKey, JSON.stringify(txEntry));
-  }
 }
 
 export default Store;

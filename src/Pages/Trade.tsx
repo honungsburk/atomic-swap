@@ -9,7 +9,14 @@ import * as Store from "src/Store";
 export default function Trade(props: { store?: SStore }) {
   const { theirID } = useParams();
   const session = Store.Session.use((s) => s.session);
+  const channelState = Store.ChannelState.use((s) => s.channelState);
   const [hasPendingTrade, setHasPendingTrade] = React.useState<boolean>(false);
+
+  React.useEffect(() => {
+    if (channelState !== "Connected" && session && theirID) {
+      session.connectTo(theirID);
+    }
+  }, [session, channelState, theirID]);
 
   React.useEffect(() => {
     if (props.store !== undefined) {
@@ -20,11 +27,6 @@ export default function Trade(props: { store?: SStore }) {
       });
     }
   }, [props.store]);
-
-  // TODO: fix this shit
-  if (theirID !== undefined && session !== undefined) {
-    session.connectTo(theirID); // Okay to call even if already connected
-  }
 
   if (hasPendingTrade) {
     return <PendingTrade store={props.store}></PendingTrade>;

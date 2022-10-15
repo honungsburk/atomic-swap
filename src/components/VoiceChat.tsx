@@ -35,8 +35,8 @@ import React from "react";
 import SessionHolder from "../Network/SessionHolder";
 import { Session } from "../Network/Session";
 import * as MathUtil from "../Util/Math";
-import Store from "../Storage/Store";
 import ToolTip from "./ToolTip";
+import * as ZStore from "src/Store"
 
 export default function VoiceChat(props: {
   session: Session;
@@ -48,7 +48,7 @@ export default function VoiceChat(props: {
     Audio.AudioChannel | undefined
   >(undefined);
 
-  const [volume, setVolume] = React.useState<number>(50);
+  const [volume, setVolume] = ZStore.Volume.use((state) => [state.volume, state.set])
   const [audioCtxState, setAudioCtxState] =
     React.useState<AudioContextState>("running");
 
@@ -74,23 +74,11 @@ export default function VoiceChat(props: {
     }
   }, [audioChannel]);
 
-  // Volume
-  React.useEffect(() => {
-    const store = Store.create();
-    const v = store.getVolume();
-    if (v !== undefined) {
-      setVolume(MathUtil.clamp(v.volume, 0, 100));
-    }
-  }, []);
-
   React.useEffect(() => {
     if (audioChannel) {
       // We increase volume like this as it feels more intuitive.
       const gain = 2 ** (volume / 100) - 1;
       audioChannel.setVolume(gain);
-      // Save
-      const store = Store.create();
-      store.setVolume(volume);
     }
   }, [audioChannel, volume]);
 

@@ -6,6 +6,8 @@ import * as ChannelPeerJS from "src/Network/ChannelPeerJS";
 import * as P2PSession from "src/Network/Session";
 import * as CardanoSerializationLib from "@emurgo/cardano-serialization-lib-browser";
 import * as TxBuilder from "src/Cardano/TxBuilder";
+import { persist } from "zustand/middleware";
+import * as Util from "src/Util";
 
 // Wallet
 export namespace Wallet {
@@ -39,6 +41,35 @@ export namespace Wallet {
   }));
 }
 
+// ChannelState
+export namespace ChannelState {
+  type State = {
+    channelState: Channel.ChannelState;
+    set: (state: Channel.ChannelState) => void;
+  };
+
+  export const use = create<State>((set) => ({
+    channelState: "Initalized",
+    set: (state) => set({ channelState: state }),
+  }));
+
+  // Session.use.getState().session.onChannelState((channelState) => {
+  //   console.log("new channel state");
+  //   use.setState({ channelState: channelState });
+  // });
+
+  // Session.use.subscribe((newSession) => {
+  //   console.log("new session");
+  //   // inital value
+  //   use.setState({ channelState: newSession.session.getChannelState() });
+  //   // Listen to changes
+  //   newSession.session.onChannelState((channelState) => {
+  //     console.log("new channel state");
+  //     use.setState({ channelState: channelState });
+  //   });
+  // });
+}
+
 // Session
 export namespace Session {
   type State = {
@@ -46,17 +77,31 @@ export namespace Session {
   };
 
   function newSession(): P2PSession.Session {
+    console.log("newSession");
+    //Create
     const newChannel = new ChannelPeerJS.ChannelPeerJS<any>();
-    return new P2PSession.Session(newChannel, CardanoSerializationLib);
+    const session = new P2PSession.Session(newChannel, CardanoSerializationLib);
+
+    //Listeners
+    ChannelState.use.setState({ channelState: session.getChannelState() });
+    session.onChannelState((s) => {
+      console.log("ChannelState", s);
+      ChannelState.use.setState({ channelState: s });
+    });
+
+    //return
+    return session;
   }
 
-  export const use = create<State>((set, get) => ({
-    session: newSession(),
-    newSession: () => {
-      get().session.destroy();
-      set({ session: newSession() });
-    },
-  }));
+  export const use = create<State>((set, get) => {
+    return {
+      session: newSession(),
+      newSession: () => {
+        get().session.destroy();
+        set({ session: newSession() });
+      },
+    };
+  });
 
   Wallet.use.subscribe(async (state) => {
     if (state.wallet) {
@@ -76,24 +121,28 @@ export namespace Session {
   });
 }
 
-// ChannelState
-export namespace ChannelState {
+/**
+ * Volume is a number in the range [0, 100]
+ */
+export namespace Volume {
   type State = {
-    channelState: Channel.ChannelState;
-    set: (state: Channel.ChannelState) => void;
+    volume: number;
+    set: (volume: number) => void;
   };
 
-  export const use = create<State>((set) => ({
-    channelState: "Initalized",
-    set: (state) => set({ channelState: state }),
-  }));
-
-  Session.use.subscribe((newState) => {
-    // inital value
-    use.setState({ channelState: newState.session.getChannelState() });
-    // Listen to changes
-    newState.session.onChannelState((channelState) =>
-      use.setState({ channelState: channelState })
-    );
-  });
+  export const use = create(
+    persist<State>(
+      (set) => ({
+        volume: 50,
+        set: (volume: number) =>
+          set({ volume: Util.Math.clamp(volume, 0, 100) }),
+      }),
+      {
+        name: "zus-volume", // unique name
+        getStorage: () => localStorage, // (optional) by default, 'localStorage' is used
+      }
+    )
+  );
 }
+
+// Last Transaction

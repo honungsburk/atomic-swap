@@ -2,7 +2,7 @@ export * as Extra from "./Extra";
 export * as List from "./ListExtra";
 export * as Map from "./MapExtra";
 export * as Set from "./SetExtra";
-export * as Math from "./MapExtra";
+export * as Math from "./Math";
 export * as Result from "./Result";
 
 /**

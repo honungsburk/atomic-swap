@@ -37,7 +37,7 @@
     "react-window-dynamic-list": "^2.4.2",
     "ts-results": "^3.3.0",
     "web-vitals": "^1.1.2",
-    "zustand": "^4.1.1"
+    "zustand": "^3.7.2"
   },
   "devDependencies": {
     "@emurgo/cardano-serialization-lib-nodejs": "^11.0.5",
