@@ -41,7 +41,6 @@ import ChatBar from "./components/ChatBar";
 import ComponentErrorBoundary from "./components/ErrorBoundary/ComponentErrorBoundary";
 import AtomicSwapLogo from "./components/Logo";
 import { usePWAInstall } from "./Hooks/PWA";
-import * as CardanoSerializationLib from "@emurgo/cardano-serialization-lib-browser";
 import * as Store from "src/Store";
 
 export default function Layout() {
@@ -128,7 +127,6 @@ function BackendIsDown() {
 function Header(props: {
   session?: NetworkSession.Session;
   channelState: ChannelState;
-  lib?: typeof CardanoSerializationLib;
 }) {
   const layout: "vertical" | "horizontal" | undefined = useBreakpointValue({
     base: "vertical",
@@ -142,7 +140,7 @@ function Header(props: {
         <Spacer />
         <HStack>
           <SessionStatus status={props.channelState} />
-          <NavBar status={props.channelState} lib={props.lib} />
+          <NavBar status={props.channelState} />
         </HStack>
       </Flex>
     );
@@ -150,7 +148,7 @@ function Header(props: {
     return (
       <Center p={2}>
         <VStack>
-          <NavBar status={props.channelState} lib={props.lib} />
+          <NavBar status={props.channelState} />
           <SessionStatus status={props.channelState} />
         </VStack>
       </Center>
@@ -168,10 +166,7 @@ function Logo() {
   );
 }
 
-function NavBar(props: {
-  status: ChannelState;
-  lib?: typeof CardanoSerializationLib;
-}) {
+function NavBar(props: { status: ChannelState }) {
   const dynamic: "Large" | "Small" | undefined = useBreakpointValue({
     base: "Small",
     sm: "Large",
