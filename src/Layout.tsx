@@ -26,7 +26,6 @@ import {
   MenuList,
   MenuItem,
   useColorModeValue,
-  useInterval,
 } from "@chakra-ui/react";
 import { Link as ReachLink, Outlet } from "react-router-dom";
 import { ChannelState } from "./Network/Channel";
@@ -42,40 +41,41 @@ import ComponentErrorBoundary from "./components/ErrorBoundary/ComponentErrorBou
 import AtomicSwapLogo from "./components/Logo";
 import { usePWAInstall } from "./Hooks/PWA";
 import * as Store from "src/Store";
+import { NetworkID } from "cardano-web-bridge-wrapper";
+import { useQuery } from "@tanstack/react-query";
+
+async function checkHealth(networkID: NetworkID): Promise<boolean> {
+  try {
+    console.log("checkHealth", networkID);
+    const API = new BlockFrostAPI(networkID);
+    const health = await API.health();
+    if (BlockFrostTypes.isHealth(health)) {
+      return health.is_healthy;
+    } else {
+      return false;
+    }
+  } catch (err: any) {
+    return false;
+  }
+}
 
 export default function Layout() {
   const layout: "vertical" | "horizontal" | undefined = useBreakpointValue({
     base: "vertical",
     sm: "horizontal",
   });
-  const [isHealthy, setIsHealth] = React.useState<boolean>(true);
+  const networkID = Store.NetworkID.use((state) => state.networkID);
+  const healthy = useQuery(
+    ["isHealty", networkID],
+    async () => (networkID ? checkHealth(networkID) : true),
+    {
+      cacheTime: 20000,
+      staleTime: 20000,
+      retry: 1,
+    }
+  );
   const channelState = Store.ChannelState.use((s) => s.channelState);
   const session = Store.Session.use((s) => s.session);
-  const wallet = Store.Wallet.use((state) => state.wallet);
-
-  const checkHealth = async () => {
-    try {
-      if (wallet !== undefined) {
-        const networkId = await wallet.getNetworkId();
-        const API = new BlockFrostAPI(networkId);
-        const health = await API.health();
-        if (BlockFrostTypes.isHealth(health)) {
-          setIsHealth(health.is_healthy);
-        } else {
-          setIsHealth(false);
-        }
-      }
-    } catch (err: any) {
-      setIsHealth(false);
-      return;
-    }
-  };
-
-  useInterval(checkHealth, 30000);
-
-  React.useEffect(() => {
-    checkHealth();
-  }, [wallet]);
 
   let chatbar = <></>;
 
@@ -102,7 +102,7 @@ export default function Layout() {
   return (
     <Flex direction="column" minH="100vh">
       <VStack w="full">
-        {isHealthy ? <></> : <BackendIsDown />}
+        {healthy.data ? <></> : <BackendIsDown />}
         <Box w="full">
           <Header channelState={channelState} />
         </Box>

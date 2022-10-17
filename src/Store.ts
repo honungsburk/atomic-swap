@@ -8,9 +8,10 @@ import * as CardanoSerializationLib from "@emurgo/cardano-serialization-lib-brow
 import * as TxBuilder from "src/Cardano/TxBuilder";
 import { persist } from "zustand/middleware";
 import * as Util from "src/Util";
-import { NetworkID } from "cardano-web-bridge-wrapper";
+import * as CWBW from "cardano-web-bridge-wrapper";
 import BlockFrostAPI from "./API/BlockFrost/BlockFrostAPI";
 import * as BlockFrostTypes from "./API/BlockFrost/Types";
+
 // Wallet
 export namespace Wallet {
   /**
@@ -41,6 +42,27 @@ export namespace Wallet {
     inject: (wallet: BasicWallet) => set({ wallet: wallet }),
     deject: () => set({ wallet: undefined }),
   }));
+}
+
+// NetworkID
+export namespace NetworkID {
+  type State = {
+    networkID?: CWBW.NetworkID;
+  };
+
+  export const use = create<State>((set) => ({
+    networkID: undefined,
+    set: (networkID?: CWBW.NetworkID) => set({ networkID: networkID }),
+  }));
+
+  Wallet.use.subscribe(async (state) => {
+    if (state.wallet) {
+      const networkID = await state.wallet.getNetworkId();
+      use.setState({ networkID: networkID });
+    } else {
+      use.setState({ networkID: undefined });
+    }
+  });
 }
 
 // ChannelState
@@ -135,7 +157,7 @@ export namespace PendingTransaction {
   type TX = {
     txHash: string;
     ttl: number;
-    networkID: NetworkID;
+    networkID: CWBW.NetworkID;
   };
 
   type State = {

@@ -9,16 +9,20 @@ import { BrowserRouter } from "react-router-dom";
 import { ColorModeScript } from "@chakra-ui/react";
 import Theme from "./Theme";
 import { registerSW } from "virtual:pwa-register";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+const queryClient = new QueryClient();
 
 ReactDOM.render(
   <>
     <ColorModeScript initialColorMode={Theme.config.initialColorMode} />
     <BrowserRouter>
-      <React.StrictMode>
-        <ChakraProvider theme={Theme}>
-          <App />
-        </ChakraProvider>
-      </React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <React.StrictMode>
+          <ChakraProvider theme={Theme}>
+            <App />
+          </ChakraProvider>
+        </React.StrictMode>
+      </QueryClientProvider>
     </BrowserRouter>
   </>,
   document.getElementById("root")
