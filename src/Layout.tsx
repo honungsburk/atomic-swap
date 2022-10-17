@@ -28,14 +28,12 @@ import {
   useColorModeValue,
   useInterval,
 } from "@chakra-ui/react";
-import { Env } from "./Env";
 import { Link as ReachLink, Outlet } from "react-router-dom";
 import { ChannelState } from "./Network/Channel";
 import * as NetworkSession from "./Network/Session";
 import * as Icons from "./components/Icons";
 import React from "react";
 import WalletSelector from "./components/WalletSelector";
-import { BasicWallet } from "cardano-web-bridge-wrapper/lib/BasicWallet";
 import ToolTip from "./components/ToolTip";
 import BlockFrostAPI from "./API/BlockFrost/BlockFrostAPI";
 import * as BlockFrostTypes from "./API/BlockFrost/Types";
