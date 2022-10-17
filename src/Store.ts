@@ -63,7 +63,6 @@ export namespace Session {
   };
 
   function newSession(): P2PSession.Session {
-    console.log("newSession");
     //Create
     const newChannel = new ChannelPeerJS.ChannelPeerJS<any>();
     const session = new P2PSession.Session(newChannel, CardanoSerializationLib);
@@ -71,7 +70,6 @@ export namespace Session {
     //Listeners
     ChannelState.use.setState({ channelState: session.getChannelState() });
     session.onChannelState((s) => {
-      console.log("ChannelState", s);
       ChannelState.use.setState({ channelState: s });
     });
 
