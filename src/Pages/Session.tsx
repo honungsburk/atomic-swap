@@ -50,6 +50,7 @@ import * as Icons from "../components/Icons";
 import { DialogBox } from "../components/DialogBox";
 import * as Cardano from "@emurgo/cardano-serialization-lib-browser";
 import * as StoreZ from "src/Store";
+import { useAsync } from "src/Hooks/UseAsync";
 
 function Session() {
   const wallet = StoreZ.Wallet.use((state) => state.wallet);
@@ -71,16 +72,24 @@ function Session() {
     val: Value;
     networkID: NetworkID;
   }>({ val: Cardano.Value.zero(), networkID: "Mainnet" });
-  React.useEffect(() => {
-    const update = async () => {
+
+  useAsync(
+    async () => {
       if (wallet !== undefined) {
         const balance = await wallet.getBalance();
         const networkID = await wallet.getNetworkId();
-        setAvailableValue({ val: balance, networkID: networkID });
+        return { val: balance, networkID: networkID };
+      } else {
+        return undefined;
       }
-    };
-    update();
-  }, [wallet]);
+    },
+    (state) => {
+      if (state !== undefined) {
+        setAvailableValue(state);
+      }
+    },
+    [wallet]
+  );
 
   const [availableAssets, setAvailableAssets] = React.useState<
     CardanoAsset.Asset[]

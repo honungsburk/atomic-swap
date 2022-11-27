@@ -1,8 +1,10 @@
 import { Heading, Spacer, Text, VStack, Button } from "@chakra-ui/react";
 import { Browser } from "../../components/ChakraKawaii";
-import Store from "../../Storage/Store";
+import * as Store from "src/Store";
 
-function PendingTrade(props: { store?: Store }) {
+function PendingTrade() {
+  const pending = Store.PendingTransaction.use((s) => s);
+
   return (
     <>
       <Spacer />
@@ -15,11 +17,8 @@ function PendingTrade(props: { store?: Store }) {
           You can not make any more trades until the current one has been
           cleared.
         </Text>
-        {props.store ? (
-          <Button
-            colorScheme="purple"
-            onClick={() => props.store?.deletePendingTx()}
-          >
+        {pending.pendingTransactions.length > 0 ? (
+          <Button colorScheme="purple" onClick={() => pending.clear()}>
             Trade Anyway
           </Button>
         ) : (

@@ -46,7 +46,6 @@ import { useQuery } from "@tanstack/react-query";
 
 async function checkHealth(networkID: NetworkID): Promise<boolean> {
   try {
-    console.log("checkHealth", networkID);
     const API = new BlockFrostAPI(networkID);
     const health = await API.health();
     if (BlockFrostTypes.isHealth(health)) {
@@ -102,7 +101,7 @@ export default function Layout() {
   return (
     <Flex direction="column" minH="100vh">
       <VStack w="full">
-        {healthy.data ? <></> : <BackendIsDown />}
+        {healthy.isLoading || healthy.data ? <></> : <BackendIsDown />}
         <Box w="full">
           <Header channelState={channelState} />
         </Box>

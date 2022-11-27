@@ -163,6 +163,7 @@ export namespace PendingTransaction {
   type State = {
     pendingTransactions: TX[];
     add: (tx: TX) => void;
+    clear: () => void;
     resolve: () => Promise<void>;
   };
 
@@ -176,16 +177,28 @@ export namespace PendingTransaction {
           });
         },
 
+        clear: () => {
+          set({
+            pendingTransactions: [],
+          });
+        },
+
         // Remove all transactions that we know can no longer interfere.
         resolve: async () => {
+          const pendingTXs = get().pendingTransactions;
+
+          if (pendingTXs.length === 0) {
+            return;
+          }
+
+          console.log("RESOLVE!");
           const notResolved = [];
-          for (const pendingTx of get().pendingTransactions) {
+          for (const pendingTx of pendingTXs) {
             const API = new BlockFrostAPI(pendingTx.networkID);
             const result = await API.txs(pendingTx.txHash);
             // If we can't find it we can not remove it.
+            console.log(result);
             if (!BlockFrostTypes.isTransaction(result)) {
-              notResolved.push(pendingTx);
-            } else {
               const latestBlock = await API.blocksLatest();
               if (
                 !(
@@ -213,11 +226,14 @@ export namespace PendingTransaction {
   let intervalID: NodeJS.Timer | undefined = undefined;
   use.subscribe((s) => {
     const hasLength = s.pendingTransactions.length > 0;
-    if (intervalID && !hasLength) {
-      clearInterval(intervalID);
-    }
+    console.log("trigger", intervalID, hasLength);
 
-    if (intervalID === undefined && hasLength) {
+    if (intervalID && !hasLength) {
+      console.log("trigger, clear");
+      clearInterval(intervalID);
+      intervalID = undefined;
+    } else if (intervalID === undefined && hasLength) {
+      console.log("trigger, setup");
       intervalID = setInterval(() => {
         s.resolve();
       }, 30000);
