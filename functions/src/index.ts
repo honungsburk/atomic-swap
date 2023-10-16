@@ -2,17 +2,41 @@ import * as functions from "firebase-functions";
 import * as express from "express";
 import { BlockFrostAPI } from "@blockfrost/blockfrost-js";
 import * as Secrets from "./secrets";
+import { ErrorMiddleware } from "./error-middleware";
+import { MissingRouteMiddleware } from "./missing-route-middleware";
 
 const app = express();
 
-// See README for how to add secrets!
-const MAINNET = new BlockFrostAPI({
-  projectId: Secrets.BLOCKFROST_ID_MAINNET,
-});
+type API = {
+  api: BlockFrostAPI;
+  network: string;
+};
 
-const TESTNET = new BlockFrostAPI({
-  projectId: Secrets.BLOCKFROST_ID_TESTNET,
-});
+const APIs: API[] = [
+  {
+    api: new BlockFrostAPI({
+      projectId: Secrets.BLOCKFROST_ID_MAINNET,
+      network: "mainnet",
+    }),
+    network: "/mainnet",
+  },
+
+  {
+    api: new BlockFrostAPI({
+      projectId: Secrets.BLOCKFROST_ID_PREPROD,
+      network: "preprod",
+    }),
+    network: "/preprod",
+  },
+
+  {
+    api: new BlockFrostAPI({
+      projectId: Secrets.BLOCKFROST_ID_PREVIEW,
+      network: "preview",
+    }),
+    network: "/preview",
+  },
+];
 
 /**
  *
@@ -28,50 +52,33 @@ async function blockfrostWrap(res: any, fn: () => Promise<any>) {
     return res.send(error);
   }
 }
-const blockfrost = "/blockfrost";
-const testnet = blockfrost + "/testnet";
-const mainnet = blockfrost + "/mainnet";
 
-// Redirect to blockfrost
-// Replies are cached so as to limit the load on the blockfrost API
-app.get(testnet + "/health", (req, res) =>
-  blockfrostWrap(res, () => TESTNET.health())
-);
-app.get(mainnet + "/health", (req, res) =>
-  blockfrostWrap(res, () => MAINNET.health())
-);
-app.get(testnet + "/assets/:unit", (req, res) =>
-  blockfrostWrap(res, () => TESTNET.assetsById(req.params.unit))
-);
-app.get(mainnet + "/assets/:unit", (req, res) =>
-  blockfrostWrap(res, () => MAINNET.assetsById(req.params.unit))
-);
-app.get(testnet + "/blocks/latest", (req, res) =>
-  blockfrostWrap(res, () => TESTNET.blocksLatest())
-);
-app.get(mainnet + "/blocks/latest", (req, res) =>
-  blockfrostWrap(res, () => MAINNET.blocksLatest())
-);
-app.get(testnet + "/epochs/:epoch/parameters", (req, res) =>
-  blockfrostWrap(res, () =>
-    TESTNET.epochsParameters(parseInt(req.params.epoch))
-  )
-);
-app.get(mainnet + "/epochs/:epoch/parameters", (req, res) =>
-  blockfrostWrap(res, () =>
-    MAINNET.epochsParameters(parseInt(req.params.epoch))
-  )
-);
-app.get(testnet + "/txs/:hash", (req, res) =>
-  blockfrostWrap(res, () => TESTNET.txs(req.params.hash))
-);
-app.get(mainnet + "/txs/:hash", (req, res) =>
-  blockfrostWrap(res, () => MAINNET.txs(req.params.hash))
-);
+for (const api of APIs) {
+  let base = "/blockfrost" + api.network;
+  app.get(base + "/health", (req, res) =>
+    blockfrostWrap(res, () => api.api.health())
+  );
+  app.get(base + "/assets/:unit", (req, res) =>
+    blockfrostWrap(res, () => api.api.assetsById(req.params.unit))
+  );
+  app.get(base + "/blocks/latest", (req, res) =>
+    blockfrostWrap(res, () => api.api.blocksLatest())
+  );
+  app.get(base + "/epochs/:epoch/parameters", (req, res) =>
+    blockfrostWrap(res, () =>
+      api.api.epochsParameters(parseInt(req.params.epoch))
+    )
+  );
+  app.get(base + "/txs/:hash", (req, res) =>
+    blockfrostWrap(res, () => api.api.txs(req.params.hash))
+  );
+}
 
 // Clever redirection so we can use /blockfrost as api
 const main = express();
 main.use("/api", app);
+app.use(MissingRouteMiddleware);
+main.use(ErrorMiddleware);
 
 // Expose Express API as a single Cloud Function:
 exports.main = functions.https.onRequest(main);

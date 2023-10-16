@@ -9,12 +9,19 @@ export default class BlockFrostAPI implements Types.API {
     const websitePath = getUrl.protocol + "//" + getUrl.host + "/";
 
     const mainnetPath = "api/blockfrost/mainnet";
-    const testnetPath = "api/blockfrost/testnet";
+    const preprodPath = "api/blockfrost/preprod";
+    // const previewPath = "api/blockfrost/preview";
+
+    // Currently we can not distinguish between preview and preprod
+    // because both have the same network id, 0. Which is stupid but they haven't
+    // updated CIP 30 yet...
+    //
+    // link: https://github.com/cardano-foundation/CIPs/issues/489
 
     if (networkID === "Mainnet") {
       this.basePath = websitePath + mainnetPath;
     } else {
-      this.basePath = websitePath + testnetPath;
+      this.basePath = websitePath + preprodPath;
     }
   }
 
