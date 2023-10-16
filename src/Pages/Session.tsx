@@ -19,7 +19,6 @@ import type {
   Value,
 } from "@emurgo/cardano-serialization-lib-browser";
 import * as CardanoSerializationLib from "@emurgo/cardano-serialization-lib-browser";
-import * as CardanoSerializationLibOld from "cardano-serialization-lib-browser-old";
 import { CreditCard, Ghost } from "../components/ChakraKawaii";
 import AssetSelector from "../components/AssetSelector";
 
