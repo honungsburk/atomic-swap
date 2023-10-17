@@ -21,7 +21,7 @@ export default function ChangeLog() {
           Changelog
         </Heading>
         <VStack spacing={3} width={"fill"} align="left">
-          <Entry title="Bug Fixes" version="3.1.1" date="2023-09-17">
+          <Entry title="Bug Fixes" version="3.1.1" date="2023-10-17">
             <Add>Version number to the header</Add>
             <Update>Fix that some assets could not be added</Update>
             <Update>Enable transactions on the Preprod test network</Update>
