@@ -6,10 +6,16 @@ import topLevelAwait from "vite-plugin-top-level-await";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as path from "node:path";
+import * as fs from "node:fs";
+
+const pkg = JSON.parse(fs.readFileSync("./package.json", "utf8"));
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const baseConfig: UserConfigExport = {
+    define: {
+      __APP_VERSION__: JSON.stringify(pkg.version),
+    },
     resolve: {
       alias: {
         src: path.resolve("src/"),

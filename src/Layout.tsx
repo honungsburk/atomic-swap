@@ -162,7 +162,10 @@ function Header(props: {
   if (layout === "horizontal") {
     return (
       <Flex p={2} align={"center"}>
-        <Logo></Logo>
+        <HStack>
+          <Logo></Logo>
+          <VersionNumber />
+        </HStack>
         <Spacer />
         <HStack>
           <SessionStatus status={props.channelState} />
@@ -423,6 +426,15 @@ function Footer() {
         </Link>
       </HStack>
     </Box>
+  );
+}
+
+// The version number of the app
+function VersionNumber(): JSX.Element {
+  return (
+    <Text fontSize="xs" color="gray.700">
+      v{__APP_VERSION__}
+    </Text>
   );
 }
 
