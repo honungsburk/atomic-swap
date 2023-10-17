@@ -89,7 +89,7 @@ export async function getMetadata(
       throw assetMetadata;
     }
     // CHECK that it actually is what you expect not just the negative!
-  } else if (Types.isAsset(assetMetadata)) {
+  } else {
     const cachedMetadata: MetadataCache = {
       kind: "metadata",
       version: currentVersion,
@@ -98,7 +98,5 @@ export async function getMetadata(
     };
     cache.setItem(unit, JSON.stringify(cachedMetadata));
     return assetMetadata;
-  } else {
-    return undefined;
   }
 }

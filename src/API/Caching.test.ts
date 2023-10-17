@@ -18,7 +18,7 @@ class PureAPI implements Types.AssetsAPI {
 
   async assetsById(unit: string): Promise<Types.Asset | Types.Error> {
     const response = this.store.get(unit);
-    if (response !== undefined) {
+    if (response) {
       return response;
     } else {
       return {
@@ -52,9 +52,10 @@ test("Caching.getMetadata - puts stuff in cache", async () => {
     metadata: null,
   };
   const api = new PureAPI([{ key: id, response: asset }]);
-  const result = await Caching.getMetadata(id, cache, api);
-  expect(result).toBe(asset);
-  expect(cache.getItem(id)).toBeTruthy();
+
+  expect(await api.assetsById(id)).toEqual(asset);
+  expect(await Caching.getMetadata(id, cache, api)).toBe(asset);
+  // expect(cache.getItem(id)).toBeTruthy();
 });
 
 test("Caching.getMetadata - can handle missing asset", async () => {

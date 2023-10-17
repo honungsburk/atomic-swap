@@ -297,8 +297,6 @@ test("outputSelection - Send 2 ADA", () => {
   const value = Value.new(BigNum.from_str("2000000"));
 
   const outputs = outputSelection(receiver, value, fakeFeeConfig.dataCost);
-  console.log("value", value.coin().to_str());
-  console.log("sum", sumOutputs(outputs).coin().to_str());
   expect(ValueExtra.eq(value, sumOutputs(outputs))).toBeTruthy();
 });
 

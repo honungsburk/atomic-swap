@@ -218,14 +218,11 @@ export const assetSchema: z.ZodSchema<Asset> = z.object({
   quantity: z.string(),
   initial_mint_tx_hash: z.string(),
   mint_or_burn_count: z.number(),
-  onchain_metadata: z.any().nullable(),
-  onchain_metadata_standard: z.union([
-    z.literal("CIP25v1"),
-    z.literal("CIP25v2"),
-    z.literal("CIP68v1"),
-    z.null(),
-  ]),
-  onchain_metadata_extra: z.string().nullable(),
+  onchain_metadata: z.any().nullish(),
+  onchain_metadata_standard: z
+    .union([z.literal("CIP25v1"), z.literal("CIP25v2"), z.literal("CIP68v1")])
+    .nullish(),
+  onchain_metadata_extra: z.string().nullish(),
   metadata: z
     .object({
       name: z.string().nullable(),
