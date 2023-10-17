@@ -1,6 +1,13 @@
 import { NetworkID } from "cardano-web-bridge-wrapper";
 import * as Types from "./Types";
 
+function validator<A>(isValid: (x: any) => x is A, x: any): A | Types.Error {
+  if (isValid(x) || Types.isError(x)) {
+    return x;
+  }
+  throw new Error("API returned an unexpected result");
+}
+
 export default class BlockFrostAPI implements Types.API {
   private basePath: string;
 
@@ -27,29 +34,29 @@ export default class BlockFrostAPI implements Types.API {
 
   async health(): Promise<Types.Health | Types.Error> {
     const result = await this.getRequest(`/health`);
-    return result as Types.Health | Types.Error;
+    return validator(Types.isHealth, result);
   }
 
   async assetsById(unit: string): Promise<Types.Asset | Types.Error> {
     const result = await this.getRequest(`/assets/${unit}`);
-    return result as Types.Asset | Types.Error;
+    return validator(Types.isAsset, result);
   }
 
   async blocksLatest(): Promise<Types.Block | Types.Error> {
     const result = await this.getRequest(`/blocks/latest`);
-    return result as Types.Block | Types.Error;
+    return validator(Types.isBlock, result);
   }
 
   async epochsParameters(
     epoch: number
   ): Promise<Types.ProtocolParameters | Types.Error> {
     const result = await this.getRequest(`/epochs/${epoch}/parameters`);
-    return result as Types.ProtocolParameters | Types.Error;
+    return validator(Types.isProtocolParameters, result);
   }
 
   async txs(hash: string): Promise<Types.Transaction | Types.Error> {
     const result = await this.getRequest(`/txs/${hash}`);
-    return result as Types.Transaction | Types.Error;
+    return validator(Types.isTransaction, result);
   }
 
   private async getRequest(

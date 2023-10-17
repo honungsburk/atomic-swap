@@ -26,7 +26,7 @@ function EditableValue(props: {
   value: BigNum;
   decimals: number;
   symbol: JSX.Element | string;
-  header: JSX.Element | string;
+  _header?: JSX.Element | string;
   onValueSubmit: (value: BigNum) => void;
   children: JSX.Element | ((isOpen: boolean) => JSX.Element);
 }) {
@@ -59,7 +59,9 @@ function EditableValue(props: {
       <PopoverContent>
         <PopoverArrow />
         <PopoverCloseButton color={colorMode.color} />
-        <PopoverHeader color={colorMode.color}>{props.header}</PopoverHeader>
+        <PopoverHeader color={props._header ? colorMode.color : "orange.500"}>
+          {props._header ?? "Missing Name"}
+        </PopoverHeader>
         <PopoverBody>
           <Formik
             initialValues={initForm}

@@ -62,11 +62,12 @@ export const adaMetadata: AdaMetadata = {
 export type NativeAssetMetadata = {
   kind: "NativeAsset";
   wasFound: boolean;
-  displayName: string;
+  displayName?: string;
   src?: string;
   decimals: number;
   hash: ScriptHash;
   assetName: AssetName;
+  unit: string; // hash + assetName
   networkId: NetworkID;
 };
 
@@ -93,7 +94,8 @@ export function makeID(asset: Asset): string {
   if (asset.kind === "ADA") {
     return "ADA";
   } else {
-    return unit(asset.metadata.hash, asset.metadata.assetName);
+    return asset.metadata.unit;
+    // return unit(asset.metadata.hash, asset.metadata.assetName);
   }
 }
 
@@ -121,8 +123,14 @@ export const toValue =
         hashIndex.set(key, nativeAsset.metadata.hash);
       }
 
-      if (assets !== undefined) {
+      if (assets !== undefined && nativeAsset.metadata.assetName) {
         assets.insert(nativeAsset.metadata.assetName, nativeAsset.amount);
+      } else {
+        // I'm guessing that if assetName is null, then we can represent it as an empty array
+        // In the worst case the transaction will not be able to build and the user will be
+        // notified.
+        console.log("assetName is null");
+        assets.insert(lib.AssetName.new(new Uint8Array()), nativeAsset.amount);
       }
     });
 
@@ -170,54 +178,70 @@ export function policyID(nativeAsset: NativeAsset): string {
 
 export const buildNativeAsset =
   (lib: typeof CardanoSerializationLib) =>
-  (amount: BigNum, _metadata: Types.Asset, networkId: NetworkID) => {
+  (amount: BigNum, asset: Types.Asset, networkId: NetworkID) => {
     const metadata: NativeAssetMetadata = {
       kind: "NativeAsset",
       wasFound: true,
-      displayName: findBestDisplayName(_metadata),
-      src: findBestSrc(_metadata),
-      decimals: _metadata.metadata?.decimals ? _metadata.metadata?.decimals : 0,
-      hash: CardanoUtil.toScriptHash(lib)(_metadata.policy_id),
-      assetName: CardanoUtil.toAssetName(lib)(_metadata.asset_name),
+      ...findBest(asset),
+      decimals: asset.metadata?.decimals ? asset.metadata?.decimals : 0,
+      hash: CardanoUtil.toScriptHash(lib)(asset.policy_id),
+      // Sometimes there is no assetname, But that is equivalent to an AssetName that is empty.
+      assetName: CardanoUtil.toAssetName(lib)(asset.asset_name ?? ""),
+      unit: asset.asset,
       networkId: networkId,
     };
 
     return nativeAsset(amount, metadata);
   };
 
-function findBestDisplayName(metadata: Types.Asset): string {
-  const metadata_offChain = metadata.metadata;
-  const metadata_on_chain = metadata.onchain_metadata;
+function findBest(asset: Types.Asset): {
+  src: string | undefined;
+  displayName: string | undefined;
+} {
+  const src: string[] = [];
+  const displayName: string[] = [];
 
-  let name: string | undefined = undefined;
-
-  if (metadata_offChain?.name) {
-    name = metadata_offChain?.name;
-  } else if (metadata_on_chain?.name) {
-    name = metadata_on_chain?.name;
-  } else {
-    name = Extra.hexDecode(metadata.asset_name);
-  }
-  return name;
-}
-
-function findBestSrc(metadata: Types.Asset): string | undefined {
-  const metadata_offChain = metadata.metadata;
-  const metadata_on_chain = metadata.onchain_metadata;
-
-  let src: string | undefined = undefined;
-
-  if (metadata_offChain?.logo) {
-    src = "data:image/png;base64," + metadata_offChain?.logo;
-  } else if (
-    metadata_on_chain &&
-    metadata_on_chain.image &&
-    !metadata_on_chain.image.startsWith("ipfs")
-  ) {
-    src = metadata_on_chain?.image;
+  if (asset.metadata) {
+    if (asset.metadata.name) {
+      displayName.push(asset.metadata.name);
+    }
+    if (asset.metadata.logo) {
+      src.push("data:image/png;base64," + asset.metadata.logo);
+    }
   }
 
-  return src;
+  const cip25 = Types.metadataDetailsCIP25Schema.safeParse(
+    asset.onchain_metadata
+  );
+
+  if (cip25.success) {
+    if (cip25.data.name) {
+      displayName.push(cip25.data.name);
+    }
+    if (typeof cip25.data.image === "string") {
+      src.push(cip25.data.image); // Warning: People are trash at encoding their url, they often don't include the protocol.
+    }
+    if (Array.isArray(cip25.data.image)) {
+      // Skip for now. Most of the time the url makes no sense.
+    }
+  }
+
+  const cip68 = Types.filesDetailsCIP68Schema.safeParse(asset.onchain_metadata);
+
+  if (cip68.success) {
+    if (cip68.data.name) {
+      displayName.push(cip68.data.name);
+    }
+    if (cip68.data.src) {
+      src.push(cip68.data.src); // Warning: People are trash at encoding their url, they often don't include the protocol.
+    }
+  }
+
+  if (asset.asset_name) {
+    displayName.push(Extra.hexDecode(asset.asset_name));
+  }
+
+  return { src: src.at(0), displayName: displayName.at(0) };
 }
 
 /**
@@ -244,6 +268,7 @@ export function findMetadata(netID: NetworkID, value: Value): Asset[] {
       displayName: Extra.hexDecode(Extra.toHex(asset.assetName.name())),
       src: undefined,
       decimals: 0,
+      unit: unit(asset.hash, asset.assetName),
       hash: asset.hash,
       assetName: asset.assetName,
       networkId: netID,
@@ -260,26 +285,30 @@ export const hydrateMetadata =
   async (netID: NetworkID, assets: Asset[]) => {
     const hydrated: Asset[] = [];
 
-    for (let i = 0; i < assets.length; i++) {
-      const asset = assets[i];
+    for (const asset of assets) {
       if (asset.kind === "ADA") {
         hydrated.push(asset);
       } else if (!asset.metadata.wasFound) {
-        const unitD = unit(asset.metadata.hash, asset.metadata.assetName);
+        console.log("hydrating", asset);
         const metadataStored = await CachingAPI.getMetadata(
-          unitD,
+          asset.metadata.unit,
           window.localStorage,
           new BlockFrostAPI(netID)
         );
-        const hydreatedAsset =
-          metadataStored !== undefined
-            ? buildNativeAsset(lib)(asset.amount, metadataStored, netID)
-            : asset;
-        hydrated.push(hydreatedAsset);
+        const hydratedAsset = metadataStored
+          ? buildNativeAsset(lib)(asset.amount, metadataStored, netID)
+          : asset;
+        hydrated.push(hydratedAsset);
+
+        console.log("asset", asset);
+        console.log("metadataStored", metadataStored);
+        console.log("hydreatedAsset", hydratedAsset);
       } else {
         hydrated.push(asset);
       }
     }
+
+    // console.log("hydrated", hydrated);
 
     return hydrated;
   };

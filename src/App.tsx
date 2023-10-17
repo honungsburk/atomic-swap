@@ -89,7 +89,7 @@ function App() {
         const API = new BlockFrostAPI(pendingTx.networkID);
         const latestBlock = await API.blocksLatest();
         if (Types.isBlock(latestBlock)) {
-          if (latestBlock.slot > pendingTx.ttl) {
+          if (latestBlock.slot && latestBlock.slot > pendingTx.ttl) {
             wipePendingTx();
           }
         }

@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 
 export type APIError = {
+  name: "APIError";
   status: number;
-  name: string;
+  type: string;
   message: string;
   timestamp: string;
   path: string;
@@ -10,10 +11,11 @@ export type APIError = {
 
 export const createAPIError =
   (path: string) =>
-  (status: number, name: string, message: string): APIError => {
+  (status: number, type: string, message: string): APIError => {
     return {
+      name: "APIError",
       status,
-      name,
+      type,
       message,
       timestamp: new Date().toISOString(),
       path,

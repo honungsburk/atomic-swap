@@ -137,7 +137,7 @@ function Session(props: {
 
   const selectedAssetsUnits: Set<string> = new Set();
   mySelectedAssets.forEach((asset) =>
-    selectedAssetsUnits.add(CardanoAsset.makeID(asset))
+    selectedAssetsUnits.add(CardanoAsset.makeID(asset.asset))
   );
 
   // Lock
@@ -810,7 +810,7 @@ function TheirAssets(props: {
         isLocked={props.isLocked}
         isEditable={false}
         assets={props.theirSelectedAssets.map((asset) => {
-          return { maxValue: asset.amount, ...asset };
+          return { maxValue: asset.amount, asset: { ...asset } };
         })}
         onAdaChange={() => {
           return;
@@ -945,6 +945,8 @@ async function deriveMySelectedAssets(
 ): Promise<SelectedAsset[]> {
   const assets = await deriveTheirSelectedAssets(value, networkID, lib);
   return assets.map((asset) => {
+    console.log(asset);
+
     let maxValue = lib.BigNum.zero();
     if (asset.kind === "ADA") {
       maxValue = totalValue.coin();
@@ -959,10 +961,10 @@ async function deriveMySelectedAssets(
     const amount = BigNumExtra.clamp(asset.amount, lib.BigNum.zero(), maxValue);
     const newAsset = {
       maxValue: maxValue,
-      ...asset,
+      asset: { ...asset },
     };
 
-    newAsset.amount = amount;
+    newAsset.asset.amount = amount;
 
     return newAsset;
   });

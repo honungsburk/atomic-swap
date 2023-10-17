@@ -133,7 +133,7 @@ function AssetSelectorList(props: {
 
 function filter(search: string, asset: CardanoAsset.Asset): boolean {
   if (search) {
-    const matchingDisplayName = asset.metadata.displayName
+    const matchingDisplayName = (asset.metadata.displayName ?? "")
       .toLowerCase()
       .includes(search.toLowerCase());
     let matchingPolicyID = false;

@@ -148,7 +148,15 @@ export default function Asset(props: AssetProps & BoxProps) {
                   <Image draggable={false} width="full" src={src} />
                 </Center>
                 <Center>
-                  <Text>{props.asset.metadata.displayName}</Text>
+                  <Text
+                    color={
+                      props.asset.metadata.displayName
+                        ? undefined
+                        : "orange.500"
+                    }
+                  >
+                    {props.asset.metadata.displayName ?? "Missing Name"}
+                  </Text>
                 </Center>
               </HStack>
               <Spacer />
@@ -164,7 +172,7 @@ export default function Asset(props: AssetProps & BoxProps) {
                         value={props.asset.amount}
                         decimals={props.asset.metadata.decimals}
                         symbol={""}
-                        header={props.asset.metadata.displayName}
+                        _header={props.asset.metadata.displayName}
                         onValueSubmit={props.onValueSubmit}
                       />
                     </Box>
@@ -366,7 +374,7 @@ type EditableAmountProps = {
   value: BigNum;
   onValueSubmit: (v: BigNum) => void;
   symbol: string | JSX.Element;
-  header: string | JSX.Element;
+  _header?: string | JSX.Element;
   decimals: number;
   isADA: boolean;
 };
@@ -400,7 +408,7 @@ function EditableAmount(props: EditableAmountProps) {
       value={props.value}
       decimals={props.decimals}
       symbol={props.symbol}
-      header={props.header}
+      _header={props._header}
       onValueSubmit={props.onValueSubmit}
     >
       {(isOpen) => (

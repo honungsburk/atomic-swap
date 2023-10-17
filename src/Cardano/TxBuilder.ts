@@ -754,11 +754,42 @@ async function initTx(netId: NetworkID): Promise<NetworkParameters> {
   if (Types.isError(latest_block)) {
     throw latest_block;
   }
+
+  // TODO: Resolve the null errors somewhere more sensible to improve UX
+  if (!latest_block.epoch) {
+    throw Error("'latest epoch' is null");
+  }
+
   const p = await blockFrostAPI.epochsParameters(latest_block.epoch);
 
   if (Types.isError(p)) {
     throw p;
   }
+
+  if (!p.coins_per_utxo_word) {
+    throw Error("'coins_per_utxo_word' is null");
+  }
+
+  if (!p.coins_per_utxo_size) {
+    throw Error("'coins_per_utxo_size' is null");
+  }
+
+  if (!p.max_val_size) {
+    throw Error("'max_val_size' is null");
+  }
+
+  if (!p.price_mem) {
+    throw Error("'price_mem' is null");
+  }
+
+  if (!p.price_step) {
+    throw Error("'price_step' is null");
+  }
+
+  if (!latest_block.slot) {
+    throw Error("'slot' is null");
+  }
+
   return {
     linearFee: {
       minFeeA: p.min_fee_a.toString(),

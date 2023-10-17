@@ -73,7 +73,11 @@ export async function getMetadata(
   //TOOD: must handle over API limit
 
   if (Types.isError(assetMetadata)) {
-    if (assetMetadata.status_code === 404) {
+    const status_code = Types.isAPIError(assetMetadata)
+      ? assetMetadata.status
+      : assetMetadata.status_code;
+
+    if (status_code === 404) {
       const cachedNotFound: NotFoundCache = {
         kind: "notfound",
         version: currentVersion,
