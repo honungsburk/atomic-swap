@@ -27,6 +27,7 @@ import {
   MenuItem,
   useColorModeValue,
   useInterval,
+  useColorMode,
 } from "@chakra-ui/react";
 import { Env } from "./Env";
 import { Link as ReachLink, Outlet } from "react-router-dom";
@@ -431,8 +432,10 @@ function Footer() {
 
 // The version number of the app
 function VersionNumber(): JSX.Element {
+  const { colorMode } = useColorMode();
+
   return (
-    <Text fontSize="xs" color="gray.700">
+    <Text fontSize="xs" color={colorMode === "dark" ? "white" : "gray.700"}>
       v{__APP_VERSION__}
     </Text>
   );
