@@ -46,8 +46,9 @@ export class ChannelPeerJS<T> implements Channel<T> {
   constructor() {
     const peerOptions: Peer.PeerJSOption = {
       secure: true,
-      host: "signal-server-peerjs.herokuapp.com",
-      port: 443,
+      // By commenting out we use the default peerjs server
+      // host: "signal-server-peerjs.herokuapp.com",
+      // port: 443,
       config: {
         iceServers: [
           { urls: "stun:stun.l.google.com:19302" },
